@@ -361,8 +361,8 @@ SNI Server Name, such as when {{!RFC7838}} is being used, the alternate domain s
 be used for querying the ESNI TXT record.
 
 Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.
-The following algorithm describes how clients should process ESNIKeys responses as
-they arrive.
+The following algorithm describes a procedure by which clients can process ESNIKeys
+responses as they arrive to produce addresses for ESNI-capable hosts.
 
 ~~~
 1. If an ESNIKeys response arrives before an A or AAAA response, and the ESNIKeys
@@ -399,10 +399,12 @@ address(es) of ESNIKeys.host_pointer.name and initiate TLS to the resulting addr
 ~~~
 
 CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds,
-as per the guidance in {{!RFC8305}}. This algorithm ensures that clients can deterministically
-resolve addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to
+as per the guidance in {{!RFC8305}}. This algorithm (probabilistically) converges towards
+addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to
 resolve ESNIKeys host addresses may initiate TLS to the hosts specified in the A or AAAA
-responses without ESNI.
+responses without ESNI. Similarly, clients that do not wish to implement ESNI support for
+incomplete ESNIKeys addresses may skip all sets using them. ESNI-capable clients MUST support
+ESNIKeys with full addresses.
 
 # The "encrypted_server_name" extension {#esni-extension}
 
