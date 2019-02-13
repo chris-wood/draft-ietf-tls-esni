@@ -16,17 +16,17 @@ body {
   font-size-adjust: 0.5;
   line-height: 24px;
   margin: 75px auto;
-  max-width: 724px;
+  max-width: 624px;
   padding: 0 5px;
 }
 
 .title, .filename, h1, h2, h3, h4, h5 {
-  font: 16px "Helvetica Neue","Roboto Condensed","Open Sans",Helvetica,Calibri,sans-serif;
+  font: 16px "Roboto Condensed","Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
   font-size-adjust: 0.5;
   font-weight: bold;
   color: #333;
   line-height: 100%;
-  margin: 0.8em 0 0.3em;
+  margin: 1.2em 0 0.3em;
 }
 .title, #rfc\.title h1 { font-size: 32px; }
 h1, section h1, h2, section h2, section h3, nav h2 { font-size: 20px; }
@@ -83,8 +83,8 @@ table.header td, table#rfc\.headerblock td {
   line-height: 28px;
 }
 
-samp, tt, code, pre {
-  font: 11pt consolas, monospace;
+samp, tt, code, pre, span.tt {
+  font: 13.5px Consolas, monospace;
   font-size-adjust: none;
 }
 pre {
@@ -165,12 +165,17 @@ a[href]:hover {
   background-color: #eee;
 }
 
-ol, ul, li, p {
+p, ol, ul, li {
   padding: 0;
-  margin: 0.5em 0 0.5em 2em;
 }
-li, p {
-  margin-left: 0;
+p {
+  margin: 0.5em 0;
+}
+ol, ul {
+  margin: 0.2em 0 0.2em 2em;
+}
+li {
+  margin: 0.2em 0;
 }
 address {
   font-style: normal;
@@ -184,7 +189,7 @@ ul.toc li {
   margin: 0;
 }
 
-@media screen and (min-width: 1024px) {
+@media screen and (min-width: 924px) {
   body {
     padding-right: 350px;
   }
@@ -192,7 +197,7 @@ ul.toc li {
     position: fixed;
     bottom: 0;
     right: 0;
-    right: calc(50vw - 550px);
+    right: calc(50vw - 500px);
     width: 300px;
     z-index: 1;
     overflow: auto;
@@ -271,8 +276,8 @@ ul.toc li {
   .github-fork-ribbon-wrapper {
     position: fixed;
   }
-/*]]>*/</style>
-<meta name="viewport" content="initial-scale=1.0">
+  /*]]>*/</style>
+  <meta name="viewport" content="initial-scale=1.0">
 
 
   <link href="#rfc.toc" rel="Contents">
@@ -304,10 +309,11 @@ ul.toc li {
 <link href="#rfc.section.7.3" rel="Chapter" title="7.3 Misrouting">
 <link href="#rfc.section.8" rel="Chapter" title="8 IANA Considerations">
 <link href="#rfc.section.8.1" rel="Chapter" title="8.1 Update of the TLS ExtensionType Registry">
+<link href="#rfc.section.8.2" rel="Chapter" title="8.2 Update of the DNS Underscore Global Scoped Entry Registry">
 <link href="#rfc.references" rel="Chapter" title="9 References">
 <link href="#rfc.references.1" rel="Chapter" title="9.1 Normative References">
 <link href="#rfc.references.2" rel="Chapter" title="9.2 Informative References">
-<link href="#rfc.appendix.A" rel="Chapter" title="A Communicating SNI to Backend Server">
+<link href="#rfc.appendix.A" rel="Chapter" title="A Communicating SNI and Nonce to Backend Server">
 <link href="#rfc.appendix.B" rel="Chapter" title="B Alternative SNI Protection Designs">
 <link href="#rfc.appendix.B.1" rel="Chapter" title="B.1 TLS-layer">
 <link href="#rfc.appendix.B.1.1" rel="Chapter" title="B.1.1 TLS in Early Data">
@@ -315,16 +321,16 @@ ul.toc li {
 <link href="#rfc.appendix.B.2" rel="Chapter" title="B.2 Application-layer">
 <link href="#rfc.appendix.B.2.1" rel="Chapter" title="B.2.1 HTTP/2 CERTIFICATE Frames">
 <link href="#rfc.appendix.C" rel="Chapter" title="C Total Client Hello Encryption">
-<link href="#rfc.appendix.D" rel="Chapter" title="D Acknowledgments">
+<link href="#rfc.appendix.D" rel="Chapter" title="D Acknowledgements">
 <link href="#rfc.authors" rel="Chapter">
 
 
-  <meta name="generator" content="xml2rfc version 2.7.0 - http://tools.ietf.org/tools/xml2rfc" />
+  <meta name="generator" content="xml2rfc version 2.17.2 - https://tools.ietf.org/tools/xml2rfc" />
   <link rel="schema.dct" href="http://purl.org/dc/terms/" />
 
   <meta name="dct.creator" content="Rescorla, E., Oku, K., Sullivan, N., and C. Wood" />
-  <meta name="dct.identifier" content="urn:ietf:id:draft-rescorla-tls-esni-latest" />
-  <meta name="dct.issued" scheme="ISO8601" content="2018-7-04" />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-tls-esni-latest" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-02-13" />
   <meta name="dct.abstract" content="This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3." />
   <meta name="description" content="This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3." />
 
@@ -348,7 +354,7 @@ ul.toc li {
 <td class="right">K. Oku</td>
 </tr>
 <tr>
-<td class="left">Expires: January 5, 2019</td>
+<td class="left">Expires: August 17, 2019</td>
 <td class="right">Fastly</td>
 </tr>
 <tr>
@@ -369,7 +375,7 @@ ul.toc li {
 </tr>
 <tr>
 <td class="left"></td>
-<td class="right">July 04, 2018</td>
+<td class="right">February 13, 2019</td>
 </tr>
 
     	
@@ -377,18 +383,18 @@ ul.toc li {
   </table>
 
   <p class="title">Encrypted Server Name Indication for TLS 1.3<br />
-  <span class="filename">draft-rescorla-tls-esni-latest</span></p>
+  <span class="filename">draft-ietf-tls-esni-latest</span></p>
   
   <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
 <p>This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3.</p>
 <h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
-<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at http://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on January 5, 2019.</p>
+<p>This Internet-Draft will expire on August 17, 2019.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
-<p>Copyright (c) 2018 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
-<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (http://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+<p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
 
   
   <hr class="noprint" />
@@ -451,13 +457,15 @@ ul.toc li {
 </li>
 <ul><li>8.1.   <a href="#rfc.section.8.1">Update of the TLS ExtensionType Registry</a>
 </li>
+<li>8.2.   <a href="#rfc.section.8.2">Update of the DNS Underscore Global Scoped Entry Registry</a>
+</li>
 </ul><li>9.   <a href="#rfc.references">References</a>
 </li>
 <ul><li>9.1.   <a href="#rfc.references.1">Normative References</a>
 </li>
 <li>9.2.   <a href="#rfc.references.2">Informative References</a>
 </li>
-</ul><li>Appendix A.   <a href="#rfc.appendix.A">Communicating SNI to Backend Server</a>
+</ul><li>Appendix A.   <a href="#rfc.appendix.A">Communicating SNI and Nonce to Backend Server</a>
 </li>
 <li>Appendix B.   <a href="#rfc.appendix.B">Alternative SNI Protection Designs</a>
 </li>
@@ -473,7 +481,7 @@ ul.toc li {
 </li>
 </ul></ul><li>Appendix C.   <a href="#rfc.appendix.C">Total Client Hello Encryption</a>
 </li>
-<li>Appendix D.   <a href="#rfc.appendix.D">Acknowledgments</a>
+<li>Appendix D.   <a href="#rfc.appendix.D">Acknowledgements</a>
 </li>
 <li><a href="#rfc.authors">Authors' Addresses</a>
 </li>
@@ -485,7 +493,7 @@ ul.toc li {
 <a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
 </h1>
 <p id="rfc.section.1.p.1">DISCLAIMER: This is very early a work-in-progress design and has not yet seen significant (or really any) security analysis. It should not be used as a basis for building production systems.</p>
-<p id="rfc.section.1.p.2">Although TLS 1.3 <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a> encrypts most of the handshake, including the server certificate, there are several other channels that allow an on-path attacker to determine the domain name the client is trying to connect to, including:</p>
+<p id="rfc.section.1.p.2">Although TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> encrypts most of the handshake, including the server certificate, there are several other channels that allow an on-path attacker to determine the domain name the client is trying to connect to, including:</p>
 <p></p>
 
 <ul>
@@ -541,7 +549,7 @@ Client &lt;------------------------------------&gt;|                     |
 <a href="#rfc.section.3.2">3.2.</a> <a href="#sni-encryption" id="sni-encryption">SNI Encryption</a>
 </h1>
 <p id="rfc.section.3.2.p.1">The protocol designed in this document is quite straightforward.</p>
-<p id="rfc.section.3.2.p.2">First, the provider publishes a public key which is used for SNI encryption for all the domains for which it serves directly or indirectly (via Split mode).  This document defines a publication mechanism using DNS, but other mechanisms are also possible. In particular, if some of the clients of a private server are applications rather than Web browsers, those applications might have the public key preconfigured.</p>
+<p id="rfc.section.3.2.p.2">First, the provider publishes a public key which is used for SNI encryption for all the domains for which it serves directly or indirectly (via Split Mode).  This document defines a publication mechanism using DNS, but other mechanisms are also possible. In particular, if some of the clients of a private server are applications rather than Web browsers, those applications might have the public key preconfigured.</p>
 <p id="rfc.section.3.2.p.3">When a client wants to form a TLS connection to any of the domains served by an ESNI-supporting provider, it replaces the &#8220;server_name&#8221; extension in the ClientHello with an &#8220;encrypted_server_name&#8221; extension, which contains the true extension encrypted under the provider&#8217;s public key. The provider can then decrypt the extension and either terminate the connection (in Shared Mode) or forward it to the backend server (in Split Mode).</p>
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#publishing-key" id="publishing-key">Publishing the SNI Encryption Key</a>
@@ -555,6 +563,7 @@ Client &lt;------------------------------------&gt;|                     |
     } KeyShareEntry;
 
     struct {
+        uint16 version;
         uint8 checksum[4];
         KeyShareEntry keys&lt;4..2^16-1&gt;;
         CipherSuite cipher_suites&lt;2..2^16-2&gt;;
@@ -567,8 +576,10 @@ Client &lt;------------------------------------&gt;|                     |
 <p></p>
 
 <dl>
+<dt>version</dt>
+<dd style="margin-left: 8">The version of the structure. For this specification, that value SHALL be 0xff01. Clients MUST ignore any ESNIKeys structure with a version they do not understand.  [[NOTE: This means that the RFC will presumably have a nonzero value.]]</dd>
 <dt>checksum</dt>
-<dd style="margin-left: 8">The first four (4) octets of the SHA-256 message digest <a href="#RFC6234" class="xref">[RFC6234]</a> of the ESNIKeys structure starting from the first octet of &#8220;keys&#8221; to the end of the structure.</dd>
+<dd style="margin-left: 8">The first four (4) octets of the SHA-256 message digest <a href="#RFC6234" class="xref">[RFC6234]</a> of the ESNIKeys structure. For the purpose of computing the checksum, the value of the &#8220;checksum&#8221; field MUST be set to zero.</dd>
 <dt>keys</dt>
 <dd style="margin-left: 8">The list of keys which can be used by the client to encrypt the SNI.  Every key being listed MUST belong to a different group.</dd>
 </dl>
@@ -581,73 +592,116 @@ Client &lt;------------------------------------&gt;|                     |
 <dt>not_after</dt>
 <dd style="margin-left: 8">The moment when the keys become invalid. Uses the same unit as not_before.</dd>
 <dt>extensions</dt>
-<dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future; this document does not define any extension.</dd>
+<dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future; this document does not define any extension.</dd>
 </dl>
 <p id="rfc.section.4.p.5">The semantics of this structure are simple: any of the listed keys may be used to encrypt the SNI for the associated domain name.  The cipher suite list is orthogonal to the list of keys, so each key may be used with any cipher suite.</p>
-<p id="rfc.section.4.p.6">This structure is placed in the RRData section of a TXT record as a base64-encoded string. If this encoding exceeds the 255 octet limit of TXT strings, it must be split across multiple concatenated strings as per Section 3.1.3 of <a href="#RFC4408" class="xref">[RFC4408]</a>.</p>
+<p id="rfc.section.4.p.6">This structure is placed in the RRData section of a TXT record as a base64-encoded string. If this encoding exceeds the 255 octet limit of TXT strings, it must be split across multiple concatenated strings as per Section 3.1.3 of <a href="#RFC4408" class="xref">[RFC4408]</a>. Servers MAY supply multiple ESNIKeys values, either of the same or of different versions.  This allows a server to support multiple versions at once.  If the server does not supply any ESNIKeys values with a version known to the client, then the client MUST behave as if no ESNIKeys were found.</p>
 <p id="rfc.section.4.p.7">The name of each TXT record MUST match the name composed of _esni and the query domain name. That is, if a client queries example.com, the ESNI TXT Resource Record might be:</p>
 <pre>
 _esni.example.com. 60S IN TXT "..." "..."
 </pre>
 <p id="rfc.section.4.p.8">Servers MUST ensure that if multiple A or AAAA records are returned for a domain with ESNI support, all the servers pointed to by those records are able to handle the keys returned as part of a ESNI TXT record for that domain.</p>
-<p id="rfc.section.4.p.9">Clients obtain these records by querying DNS for ESNI-enabled server domains.  Thus, servers operating in Split Mode SHOULD have DNS configured to return the same A (or AAAA) record for all ESNI-enabled servers they service. This yields an anonymity set of cardinality equal to the number of ESNI-enabled server domains supported by a given client-facing server. Thus, even with SNI encryption, an attacker which can enumerate the set of ESNI-enabled domains supported by a client-facing server can guess the correct SNI with probability at least 1/K, where K is the size of this ESNI-enabled server anonymity set. This probability may be increased via traffic analysis or other mechanisms.</p>
-<p id="rfc.section.4.p.10">The &#8220;checksum&#8221; field provides protection against transmission errors, including those caused by intermediaries such as a DNS proxy running on a home router.</p>
-<p id="rfc.section.4.p.11">&#8220;not_before&#8221; and &#8220;not_after&#8221; fields represent the validity period of the published ESNI keys. Clients MUST NOT use ESNI keys that was covered by an invalid checksum or beyond the published period. Servers SHOULD set the Resource Record TTL small enough so that the record gets discarded by the cache before the ESNI keys reach the end of their validity period. Note that servers MAY need to retain the decryption key for some time after &#8220;not_after&#8221;, and will need to consider clock skew, internal caches and the like, when selecting the &#8220;not_before&#8221; and &#8220;not_after&#8221; values.</p>
-<p id="rfc.section.4.p.12">Client MAY cache the ESNIKeys for a particular domain based on the TTL of the Resource Record, but SHOULD NOT cache it based on the not_after value, to allow servers to rotate the keys often and improve forward secrecy.</p>
-<p id="rfc.section.4.p.13">Note that the length of this structure MUST NOT exceed 2^16 - 1, as the RDLENGTH is only 16 bits <a href="#RFC1035" class="xref">[RFC1035]</a>.</p>
+<p id="rfc.section.4.p.9">Clients obtain these records by querying DNS for ESNI-enabled server domains.  Clients may initiate these queries in parallel alongside normal A or AAAA queries, and SHOULD block TLS handshakes until they complete, perhaps by timing out.</p>
+<p id="rfc.section.4.p.10">In cases where the domain of the A or AAAA records being resolved do not match the SNI Server Name, such as when <a href="#RFC7838" class="xref">[RFC7838]</a> is being used, the SNI domain should be used for querying the ESNI TXT record.</p>
+<p id="rfc.section.4.p.11">Servers operating in Split Mode SHOULD have DNS configured to return the same A (or AAAA) record for all ESNI-enabled servers they service. This yields an anonymity set of cardinality equal to the number of ESNI-enabled server domains supported by a given client-facing server. Thus, even with SNI encryption, an attacker which can enumerate the set of ESNI-enabled domains supported by a client-facing server can guess the correct SNI with probability at least 1/K, where K is the size of this ESNI-enabled server anonymity set. This probability may be increased via traffic analysis or other mechanisms.</p>
+<p id="rfc.section.4.p.12">The &#8220;checksum&#8221; field provides protection against transmission errors, including those caused by intermediaries such as a DNS proxy running on a home router.</p>
+<p id="rfc.section.4.p.13">&#8220;not_before&#8221; and &#8220;not_after&#8221; fields represent the validity period of the published ESNI keys. Clients MUST NOT use ESNI keys that was covered by an invalid checksum or beyond the published period. If none of the ESNI keys values are acceptable, the client SHOULD behave as if no ESNIKeys were found.</p>
+<p id="rfc.section.4.p.14">Servers SHOULD set the Resource Record TTL small enough so that the record gets discarded by the cache before the ESNI keys reach the end of their validity period. Note that servers MAY need to retain the decryption key for some time after &#8220;not_after&#8221;, and will need to consider clock skew, internal caches and the like, when selecting the &#8220;not_before&#8221; and &#8220;not_after&#8221; values.</p>
+<p id="rfc.section.4.p.15">Client MAY cache the ESNIKeys for a particular domain based on the TTL of the Resource Record, but SHOULD NOT cache it based on the not_after value, to allow servers to rotate the keys often and improve forward secrecy.</p>
+<p id="rfc.section.4.p.16">Note that the length of this structure MUST NOT exceed 2^16 - 1, as the RDLENGTH is only 16 bits <a href="#RFC1035" class="xref">[RFC1035]</a>.</p>
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#esni-extension" id="esni-extension">The &#8220;encrypted_server_name&#8221; extension</a>
 </h1>
-<p id="rfc.section.5.p.1">The encrypted SNI is carried in an &#8220;encrypted_server_name&#8221; extension, which contains an EncryptedSNI structure:</p>
+<p id="rfc.section.5.p.1">The encrypted SNI is carried in an &#8220;encrypted_server_name&#8221; extension, defined as follows:</p>
+<pre>
+   enum {
+       encrypted_server_name(0xffce), (65535)
+   } ExtensionType;
+</pre>
+<p id="rfc.section.5.p.2">For clients (in ClientHello), this extension contains the following ClientEncryptedSNI structure:</p>
 <pre>
    struct {
        CipherSuite suite;
+       KeyShareEntry key_share;
        opaque record_digest&lt;0..2^16-1&gt;;
        opaque encrypted_sni&lt;0..2^16-1&gt;;
-   } EncryptedSNI;
+   } ClientEncryptedSNI;
 </pre>
 <p></p>
 
 <dl>
-<dt>record_digest</dt>
-<dd style="margin-left: 8">A cryptographic hash of the ESNIKeys structure from which the ESNI key was obtained, i.e., from the first byte of &#8220;checksum&#8221; to the end of the structure.  This hash is computed using the hash function associated with <samp>suite</samp>.</dd>
 <dt>suite</dt>
 <dd style="margin-left: 8">The cipher suite used to encrypt the SNI.</dd>
+<dt>key_share</dt>
+<dd style="margin-left: 8">The KeyShareEntry carrying the client&#8217;s public ephemeral key shared used to derive the ESNI key.</dd>
+<dt>record_digest</dt>
+<dd style="margin-left: 8">A cryptographic hash of the ESNIKeys structure from which the ESNI key was obtained, i.e., from the first byte of &#8220;checksum&#8221; to the end of the structure.  This hash is computed using the hash function associated with <samp>suite</samp>.</dd>
 <dt>encrypted_sni</dt>
-<dd style="margin-left: 8">The original ServerNameList from the &#8220;server_name&#8221; extension, padded and AEAD-encrypted using cipher suite &#8220;suite&#8221; and with the key generated as described below.</dd>
+<dd style="margin-left: 8">The ClientESNIInner structure, AEAD-encrypted using cipher suite &#8220;suite&#8221; and the key generated as described below.</dd>
+</dl>
+<p id="rfc.section.5.p.4">For servers (in EncryptedExtensions), this extension contains the following structure:</p>
+<pre>
+   struct {
+       uint8 nonce[16];
+   } ServerEncryptedSNI;
+</pre>
+<p></p>
+
+<dl>
+<dt>nonce</dt>
+<dd style="margin-left: 8">The contents of ClientESNIInner.nonce. (See <a href="#client-behavior" class="xref">Section 5.1</a>.)</dd>
 </dl>
 <h1 id="rfc.section.5.1">
 <a href="#rfc.section.5.1">5.1.</a> <a href="#client-behavior" id="client-behavior">Client Behavior</a>
 </h1>
-<p id="rfc.section.5.1.p.1">In order to send an encrypted SNI, the client MUST first select one of the server ESNIKeyShareEntry values and generate an (EC)DHE share in the matching group. This share is then used for the client&#8217;s &#8220;key_share&#8221; extension and will be used to derive both the SNI encryption key and the (EC)DHE shared secret which is used in the TLS key schedule.  This has two important implications:</p>
-<p></p>
-
-<ul>
-<li>The client MUST only provide one KeyShareEntry</li>
-<li>The server is committing to support every group in the ESNIKeys list (see below for server behavior).</li>
-</ul>
-<p id="rfc.section.5.1.p.3">The SNI encryption key is computed from the DH shared secret Z as follows:</p>
+<p id="rfc.section.5.1.p.1">In order to send an encrypted SNI, the client MUST first select one of the server ESNIKeyShareEntry values and generate an (EC)DHE share in the matching group. This share will then be sent to the server in the &#8220;encrypted_sni&#8221; extension and used to derive the SNI encryption key. It does not affect the (EC)DHE shared secret used in the TLS key schedule. It MUST also select an appropriate cipher suite from the list of suites offered by the server. If the client is unable to select an appropriate group or suite it SHOULD ignore that ESNIKeys value and MAY attempt to use another value provided by the server (recall that servers might provide multiple ESNIKeys in response to a ESNI TXT query).  The client MUST NOT send encrypted SNI using groups or cipher suites not advertised by the server.</p>
+<p id="rfc.section.5.1.p.2">Let Z be the DH shared secret derived from a key share in ESNIKeys and the corresponding client share in ClientEncryptedSNI.key_share. The SNI encryption key is computed from Z as follows:</p>
 <pre>
    Zx = HKDF-Extract(0, Z)
-   key = HKDF-Expand-Label(Zx, "esni key", Hash(ClientHello.Random), key_length)
-   iv = HKDF-Expand-Label(Zx, "esni iv", Hash(ClientHello.Random), iv_length)
+   key = HKDF-Expand-Label(Zx, "esni key", Hash(ESNIContents), key_length)
+   iv = HKDF-Expand-Label(Zx, "esni iv", Hash(ESNIContents), iv_length)
 </pre>
-<p id="rfc.section.5.1.p.4">The client then creates a PaddedServerNameList:</p>
+<p id="rfc.section.5.1.p.3">where ESNIContents is as specified below and Hash is the hash function associated with the HKDF instantiation.</p>
+<pre>
+   struct {
+       opaque record_digest&lt;0..2^16-1&gt;;
+       KeyShareEntry esni_key_share;
+       Random client_hello_random;
+   } ESNIContents;
+</pre>
+<p id="rfc.section.5.1.p.4">The client then creates a ClientESNIInner structure:</p>
 <pre>
    struct {
        ServerNameList sni;
        opaque zeros[ESNIKeys.padded_length - length(sni)];
    } PaddedServerNameList;
+
+   struct {
+       uint8 nonce[16];
+       PaddedServerNameList realSNI;
+   } ClientESNIInner;
 </pre>
-<p id="rfc.section.5.1.p.5">This value consists of the serialized ServerNameList padded with enough zeroes to make the total structure ESNIKeys.padded_length bytes long. The purpose of the padding is to prevent attackers from using the length of the &#8220;encrypted_server_name&#8221; extension to determine the true SNI. If the serialized ServerNameList is longer than ESNIKeys.padded_length, the client MUST NOT use the &#8220;encrypted_server_name&#8221; extension.</p>
-<p id="rfc.section.5.1.p.6">The EncryptedSNI.encrypted_sni value is then computed using the usual TLS 1.3 AEAD:</p>
+<p></p>
+
+<dl>
+<dt>nonce</dt>
+<dd style="margin-left: 8">A random 16-octet value to be echoed by the server in the &#8220;encrypted_server_name&#8221; extension.</dd>
+<dt>sni</dt>
+<dd style="margin-left: 8">The true SNI, that is, the ServerNameList that would have been sent in the plaintext &#8220;server_name&#8221; extension.</dd>
+<dt>zeros</dt>
+<dd style="margin-left: 8">Zero padding whose length makes the serialized PaddedServerNameList struct have a length equal to ESNIKeys.padded_length.</dd>
+</dl>
+<p id="rfc.section.5.1.p.6">This value consists of the serialized ServerNameList from the &#8220;server_name&#8221; extension, padded with enough zeroes to make the total structure ESNIKeys.padded_length bytes long. The purpose of the padding is to prevent attackers from using the length of the &#8220;encrypted_server_name&#8221; extension to determine the true SNI. If the serialized ServerNameList is longer than ESNIKeys.padded_length, the client MUST NOT use the &#8220;encrypted_server_name&#8221; extension.</p>
+<p id="rfc.section.5.1.p.7">The ClientEncryptedSNI.encrypted_sni value is then computed using the usual TLS 1.3 AEAD:</p>
 <pre>
-    encrypted_sni = AEAD-Encrypt(key, iv, "", PaddedServerNameList)
+    encrypted_sni = AEAD-Encrypt(key, iv, ClientHello.KeyShareClientHello, ClientESNIInner)
 </pre>
-<p id="rfc.section.5.1.p.7">Note: future extensions may end up reusing the server&#8217;s ESNIKeyShareEntry for other purposes within the same message (e.g., encrypting other values). Those usages MUST have their own HKDF labels to avoid reuse.</p>
-<p id="rfc.section.5.1.p.8">[[OPEN ISSUE: If in future you were to reuse these keys for 0-RTT priming, then you would have to worry about potentially expanding twice of Z_extracted. We should think about how to harmonize these to make sure that we maintain key separation.  Similarly, if the server uses the same key for ESNI as it does in ServerKeyShare, this is going to involve re-use of Z in some hard to analyze ways. Of course, this would also involve abandoning PFS.]]</p>
-<p id="rfc.section.5.1.p.9">This value is placed in an &#8220;encrypted_server_name&#8221; extension.</p>
-<p id="rfc.section.5.1.p.10">The client MAY either omit the &#8220;server_name&#8221; extension or provide an innocuous dummy one (this is required for technical conformance with <a href="#RFC7540" class="xref">[RFC7540]</a>; Section 9.2.)</p>
+<p id="rfc.section.5.1.p.8">Where ClientHello.KeyShareClientHello is the body of the extension but not including the extension header. Including ClientHello.KeyShareClientHello in the AAD of AEAD-Encrypt binds the ClientEncryptedSNI value to the ClientHello and prevents cut-and-paste attacks.</p>
+<p id="rfc.section.5.1.p.9">Note: future extensions may end up reusing the server&#8217;s ESNIKeyShareEntry for other purposes within the same message (e.g., encrypting other values). Those usages MUST have their own HKDF labels to avoid reuse.</p>
+<p id="rfc.section.5.1.p.10">[[OPEN ISSUE: If in the future you were to reuse these keys for 0-RTT priming, then you would have to worry about potentially expanding twice of Z_extracted. We should think about how to harmonize these to make sure that we maintain key separation.]]</p>
+<p id="rfc.section.5.1.p.11">This value is placed in an &#8220;encrypted_server_name&#8221; extension.</p>
+<p id="rfc.section.5.1.p.12">The client MAY either omit the &#8220;server_name&#8221; extension or provide an innocuous dummy one (this is required for technical conformance with <a href="#RFC7540" class="xref">[RFC7540]</a>; Section 9.2.)</p>
+<p id="rfc.section.5.1.p.13">If the server does not negotiate TLS 1.3 or above, then the client MUST abort the connection with an &#8220;unsupported_version&#8221; alert.  If the server does not provide an &#8220;encrypted_server_name&#8221; extension in EncryptedExtensions, the client MUST abort the connection with an &#8220;illegal_parameter&#8221; alert. Moreover, it MUST check that ClientESNIInner.nonce matches the value of the &#8220;encrypted_server_name&#8221; extension provided by the server, and otherwise abort the connection with an &#8220;illegal_parameter&#8221; alert.</p>
 <h1 id="rfc.section.5.2">
 <a href="#rfc.section.5.2">5.2.</a> <a href="#client-facing-server-behavior" id="client-facing-server-behavior">Client-Facing Server Behavior</a>
 </h1>
@@ -656,23 +710,21 @@ _esni.example.com. 60S IN TXT "..." "..."
 
 <ul>
 <li>If it is unable to negotiate TLS 1.3 or greater, it MUST abort the connection with a &#8220;handshake_failure&#8221; alert.</li>
-<li>If the EncryptedSNI.record_digest value does not match the cryptographic hash of any known ENSIKeys structure, it MUST abort the connection with an &#8220;illegal_parameter&#8221; alert. This is necessary to prevent downgrade attacks.  [[OPEN ISSUE: We looked at ignoring the extension but concluded this was better.]]</li>
-<li>If more than one KeyShareEntry has been provided, or if that share&#8217;s group does not match that for the SNI encryption key, it MUST abort the connection with an &#8220;illegal_parameter&#8221; alert.</li>
+<li>If the ClientEncryptedSNI.record_digest value does not match the cryptographic hash of any known ESNIKeys structure, it MUST abort the connection with an &#8220;illegal_parameter&#8221; alert. This is necessary to prevent downgrade attacks.  [[OPEN ISSUE: We looked at ignoring the extension but concluded this was better.]]</li>
+<li>If the ClientEncryptedSNI.key_share group does not match one in the ESNIKeys.keys, it MUST abort the connection with an &#8220;illegal_parameter&#8221; alert.</li>
 <li>If the length of the &#8220;encrypted_server_name&#8221; extension is inconsistent with the advertised padding length (plus AEAD expansion) the server MAY abort the connection with an &#8220;illegal_parameter&#8221; alert without attempting to decrypt.</li>
 </ul>
 <p id="rfc.section.5.2.p.3">Assuming these checks succeed, the server then computes K_sni and decrypts the ServerName value. If decryption fails, the server MUST abort the connection with a &#8220;decrypt_error&#8221; alert.</p>
-<p id="rfc.section.5.2.p.4">If the decrypted value&#8217;s length is different from the advertised ESNIKeys.padded_length or the padding consists of any value other than 0, then the server MUST abort the connection with an illegal_parameter alert. Otherwise, the server uses the PaddedServerNameList.sni value as if it were the &#8220;server_name&#8221; extension. Any actual &#8220;server_name&#8221; extension is ignored.</p>
+<p id="rfc.section.5.2.p.4">If the decrypted value&#8217;s length is different from the advertised ESNIKeys.padded_length or the padding consists of any value other than 0, then the server MUST abort the connection with an illegal_parameter alert. Otherwise, the server uses the PaddedServerNameList.sni value as if it were the &#8220;server_name&#8221; extension. Any actual &#8220;server_name&#8221; extension is ignored, which also means the server MUST NOT send the &#8220;server_name&#8221; extension to the client.</p>
 <p id="rfc.section.5.2.p.5">Upon determining the true SNI, the client-facing server then either serves the connection directly (if in Shared Mode), in which case it executes the steps in the following section, or forwards the TLS connection to the backend server (if in Split Mode). In the latter case, it does not make any changes to the TLS messages, but just blindly forwards them.</p>
 <h1 id="rfc.section.5.3">
 <a href="#rfc.section.5.3">5.3.</a> <a href="#shared-mode-server-behavior" id="shared-mode-server-behavior">Shared Mode Server Behavior</a>
 </h1>
-<p id="rfc.section.5.3.p.1">A server operating in Shared Mode uses PaddedServerNameList.sni as if it were the &#8220;server_name&#8221; extension to finish the handshake. It SHOULD pad the Certificate message, via padding at the record layer, such that its length equals the size of the largest possible Certificate (message) covered by the same ESNI key.</p>
+<p id="rfc.section.5.3.p.1">A server operating in Shared Mode uses PaddedServerNameList.sni as if it were the &#8220;server_name&#8221; extension to finish the handshake. It SHOULD pad the Certificate message, via padding at the record layer, such that its length equals the size of the largest possible Certificate (message) covered by the same ESNI key. Moreover, the server MUST include the &#8220;encrypted_server_name&#8221; extension in EncryptedExtensions, and the value of this extension MUST match PaddedServerNameList.nonce.</p>
 <h1 id="rfc.section.5.4">
 <a href="#rfc.section.5.4">5.4.</a> <a href="#backend-server-behavior" id="backend-server-behavior">Split Mode Server Behavior</a>
 </h1>
-<p id="rfc.section.5.4.p.1">The backend Server ignores both the &#8220;encrypted_server_name&#8221; and the &#8220;server_name&#8221; (if any) and completes the handshake as usual. If in Shared Mode, the server will still know the true SNI, and can use it for certificate selection. In Split Mode, it may not know the true SNI and so will generally be configured to use a single certificate.  <a href="#communicating-sni" class="xref">Appendix A</a> describes a mechanism for communicating the true SNI to the backend server.</p>
-<p id="rfc.section.5.4.p.2">Similar to the Shared Mode behavior, the backend server in Split Mode SHOULD pad the Certificate message, via padding at the record layer such that its length equals the size of the largest possible Certificate (message) covered by the same ESNI key.</p>
-<p id="rfc.section.5.4.p.3">[[OPEN ISSUE: Do we want &#8220;encrypted_server_name&#8221; in EE? It&#8217;s clearer communication, but would make it so you could not operate a current TLS 1.3 server as a backend server.]]</p>
+<p id="rfc.section.5.4.p.1">In Split Mode, the backend server must know PaddedServerNameList.nonce to echo it back in EncryptedExtensions and complete the handshake.  <a href="#communicating-sni" class="xref">Appendix A</a> describes one mechanism for sending both PaddedServerNameList.sni and ClientESNIInner.nonce to the backend server. Thus, backend servers function the same as servers operating in Shared Mode.</p>
 <h1 id="rfc.section.6">
 <a href="#rfc.section.6">6.</a> <a href="#compatibility-issues" id="compatibility-issues">Compatibility Issues</a>
 </h1>
@@ -680,11 +732,11 @@ _esni.example.com. 60S IN TXT "..." "..."
 <h1 id="rfc.section.6.1">
 <a href="#rfc.section.6.1">6.1.</a> <a href="#misconfiguration" id="misconfiguration">Misconfiguration</a>
 </h1>
-<p id="rfc.section.6.1.p.1">If DNS is misconfigured so that a client receives ESNI keys for a server which is not prepared to receive ESNI, then the server will ignore the &#8220;encrypted_server_name&#8221; extension, as required by <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a>; Section 4.1.2.  If the servers does not require SNI, it will complete the handshake with its default certificate. Most likely, this will cause a certificate name mismatch and thus handshake failure. Clients SHOULD not fall back to cleartext SNI, because that allows a network attacker to disclose the SNI. They MAY attempt to use another server from the DNS results, if one is provided.</p>
+<p id="rfc.section.6.1.p.1">If DNS is misconfigured so that a client receives ESNI keys for a server which is not prepared to receive ESNI, then the server will ignore the &#8220;encrypted_server_name&#8221; extension, as required by <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.1.2.  If the servers does not require SNI, it will complete the handshake with its default certificate. Most likely, this will cause a certificate name mismatch and thus handshake failure. Clients SHOULD NOT fall back to cleartext SNI, because that allows a network attacker to disclose the SNI. They MAY attempt to use another server from the DNS results, if one is provided.</p>
 <h1 id="rfc.section.6.2">
 <a href="#rfc.section.6.2">6.2.</a> <a href="#middleboxes" id="middleboxes">Middleboxes</a>
 </h1>
-<p id="rfc.section.6.2.p.1">A more serious problem is MITM proxies which do not support this extension. <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a>; Section 9.3 requires that such proxies remove any extensions they do not understand.  This will have one of two results when connecting to the client-facing server:</p>
+<p id="rfc.section.6.2.p.1">A more serious problem is MITM proxies which do not support this extension. <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 9.3 requires that such proxies remove any extensions they do not understand.  This will have one of two results when connecting to the client-facing server:</p>
 <p></p>
 
 <ol>
@@ -701,7 +753,7 @@ _esni.example.com. 60S IN TXT "..." "..."
 <a href="#rfc.section.7.1">7.1.</a> <a href="#cleartext-dns" id="cleartext-dns">Why is cleartext DNS OK?</a>
 </h1>
 <p id="rfc.section.7.1.p.1">In comparison to <a href="#I-D.kazuho-protected-sni" class="xref">[I-D.kazuho-protected-sni]</a>, wherein DNS Resource Records are signed via a server private key, ESNIKeys have no authenticity or provenance information. This means that any attacker which can inject DNS responses or poison DNS caches, which is a common scenario in client access networks, can supply clients with fake ESNIKeys (so that the client encrypts SNI to them) or strip the ESNIKeys from the response. However, in the face of an attacker that controls DNS, no SNI encryption scheme can work because the attacker can replace the IP address, thus blocking client connections, or substituting a unique IP address which is 1:1 with the DNS name that was looked up (modulo DNS wildcards). Thus, allowing the ESNIKeys in the clear does not make the situation significantly worse.</p>
-<p id="rfc.section.7.1.p.2">Clearly, DNSSEC (if the client validates and hard fails) is a defense against this form of attack, but DoH/DPRIVE are also defenses against DNS attacks by attackers on the local network, which is a common case where SNI.  Moreover, as noted in the introduction, SNI encryption is less useful without encryption of DNS queries in transit via DoH or DPRIVE mechanisms.</p>
+<p id="rfc.section.7.1.p.2">Clearly, DNSSEC (if the client validates and hard fails) is a defense against this form of attack, but DoH/DPRIVE are also defenses against DNS attacks by attackers on the local network, which is a common case where SNI is desired.  Moreover, as noted in the introduction, SNI encryption is less useful without encryption of DNS queries in transit via DoH or DPRIVE mechanisms.</p>
 <h1 id="rfc.section.7.2">
 <a href="#rfc.section.7.2">7.2.</a> <a href="#comparison-against-criteria" id="comparison-against-criteria">Comparison Against Criteria</a>
 </h1>
@@ -717,15 +769,15 @@ _esni.example.com. 60S IN TXT "..." "..."
 <h1 id="rfc.section.7.2.3">
 <a href="#rfc.section.7.2.3">7.2.3.</a> <a href="#prevent-sni-based-dos-attacks" id="prevent-sni-based-dos-attacks">Prevent SNI-based DoS attacks</a>
 </h1>
-<p id="rfc.section.7.2.3.p.1">This design requires servers to decrypt ClientHello messages with EncryptedSNI extensions carrying valid digests. Thus, it is possible for an attacker to force decryption operations on the server. This attack is bound by the number of valid TCP connections an attacker can open.</p>
+<p id="rfc.section.7.2.3.p.1">This design requires servers to decrypt ClientHello messages with ClientEncryptedSNI extensions carrying valid digests. Thus, it is possible for an attacker to force decryption operations on the server. This attack is bound by the number of valid TCP connections an attacker can open.</p>
 <h1 id="rfc.section.7.2.4">
 <a href="#rfc.section.7.2.4">7.2.4.</a> <a href="#do-not-stick-out" id="do-not-stick-out">Do not stick out</a>
 </h1>
-<p id="rfc.section.7.2.4.p.1">By sending SNI and ESNI values (with illegitimate digests), or by sending legitimate ESNI values for and &#8220;fake&#8221; SNI values, clients do not display clear signals of ESNI intent to passive eavesdroppers. As more clients enable ESNI support, e.g., as normal part of Web browser functionality, with keys supplied by shared hosting providers, the presence of ESNI extensions becomes less suspicious and part of common or predictable client behavior. In other words, if all Web browsers start using ESNI, the presence of this value does not signal suspicious behavior to passive eavesdroppers.</p>
+<p id="rfc.section.7.2.4.p.1">As more clients enable ESNI support, e.g., as normal part of Web browser functionality, with keys supplied by shared hosting providers, the presence of ESNI extensions becomes less suspicious and part of common or predictable client behavior. In other words, if all Web browsers start using ESNI, the presence of this value does not signal suspicious behavior to passive eavesdroppers.</p>
 <h1 id="rfc.section.7.2.5">
 <a href="#rfc.section.7.2.5">7.2.5.</a> <a href="#forward-secrecy" id="forward-secrecy">Forward secrecy</a>
 </h1>
-<p id="rfc.section.7.2.5.p.1">This design is not forward secret because the server&#8217;s ESNI key is static.  However, the window of exposure is bound by the key lifetime. It is RECOMMEMDED that servers rotate keys frequently.</p>
+<p id="rfc.section.7.2.5.p.1">This design is not forward secret because the server&#8217;s ESNI key is static.  However, the window of exposure is bound by the key lifetime. It is RECOMMENDED that servers rotate keys frequently.</p>
 <h1 id="rfc.section.7.2.6">
 <a href="#rfc.section.7.2.6">7.2.6.</a> <a href="#proper-security-context" id="proper-security-context">Proper security context</a>
 </h1>
@@ -737,7 +789,7 @@ _esni.example.com. 60S IN TXT "..." "..."
 <h1 id="rfc.section.7.2.8">
 <a href="#rfc.section.7.2.8">7.2.8.</a> <a href="#supporting-multiple-protocols" id="supporting-multiple-protocols">Supporting multiple protocols</a>
 </h1>
-<p id="rfc.section.7.2.8.p.1">This design has no impact on application layer protocol negotiation. It only affects connection routing, server certificate selection, and client certificate verification.  Thus, it is compatible with multiple protocols.</p>
+<p id="rfc.section.7.2.8.p.1">This design has no impact on application layer protocol negotiation. It may affect connection routing, server certificate selection, and client certificate verification.  Thus, it is compatible with multiple protocols.</p>
 <h1 id="rfc.section.7.3">
 <a href="#rfc.section.7.3">7.3.</a> <a href="#misrouting" id="misrouting">Misrouting</a>
 </h1>
@@ -749,56 +801,70 @@ _esni.example.com. 60S IN TXT "..." "..."
 <h1 id="rfc.section.8.1">
 <a href="#rfc.section.8.1">8.1.</a> <a href="#update-of-the-tls-extensiontype-registry" id="update-of-the-tls-extensiontype-registry">Update of the TLS ExtensionType Registry</a>
 </h1>
-<p id="rfc.section.8.1.p.1">IANA is requested to Create an entry, encrypted_server_name(0xffce), in the existing registry for ExtensionType (defined in <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a>), with &#8220;TLS 1.3&#8221; column values being set to &#8220;CH&#8221;, and &#8220;Recommended&#8221; column being set to &#8220;Yes&#8221;.</p>
+<p id="rfc.section.8.1.p.1">IANA is requested to Create an entry, encrypted_server_name(0xffce), in the existing registry for ExtensionType (defined in <a href="#RFC8446" class="xref">[RFC8446]</a>), with &#8220;TLS 1.3&#8221; column values being set to &#8220;CH, EE&#8221;, and &#8220;Recommended&#8221; column being set to &#8220;Yes&#8221;.</p>
+<h1 id="rfc.section.8.2">
+<a href="#rfc.section.8.2">8.2.</a> <a href="#update-of-the-dns-underscore-global-scoped-entry-registry" id="update-of-the-dns-underscore-global-scoped-entry-registry">Update of the DNS Underscore Global Scoped Entry Registry</a>
+</h1>
+<p id="rfc.section.8.2.p.1">IANA is requested to create an entry in the DNS Underscore Global Scoped Entry Registry (defined in <a href="#I-D.ietf-dnsop-attrleaf" class="xref">[I-D.ietf-dnsop-attrleaf]</a>) with the &#8220;RR Type&#8221; column value being set to &#8220;TXT&#8221;, the &#8220;_NODE NAME&#8221; column value being set to &#8220;_esni&#8221;, and the &#8220;Reference&#8221; column value being set to this document.</p>
 <h1 id="rfc.references">
 <a href="#rfc.references">9.</a> References</h1>
 <h1 id="rfc.references.1">
 <a href="#rfc.references.1">9.1.</a> Normative References</h1>
 <table><tbody>
 <tr>
-<td class="reference"><b id="I-D.ietf-tls-exported-authenticator">[I-D.ietf-tls-exported-authenticator]</b></td>
+<td class="reference"><b id="I-D.ietf-dnsop-attrleaf">[I-D.ietf-dnsop-attrleaf]</b></td>
 <td class="top">
-<a>Sullivan, N.</a>, "<a href="http://tools.ietf.org/html/draft-ietf-tls-exported-authenticator-07">Exported Authenticators in TLS</a>", Internet-Draft draft-ietf-tls-exported-authenticator-07, June 2018.</td>
+<a>Crocker, D.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnsop-attrleaf-16">DNS Scoped Data Through "Underscore" Naming of Attribute Leaves</a>", Internet-Draft draft-ietf-dnsop-attrleaf-16, November 2018.</td>
 </tr>
 <tr>
-<td class="reference"><b id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</b></td>
+<td class="reference"><b id="I-D.ietf-tls-exported-authenticator">[I-D.ietf-tls-exported-authenticator]</b></td>
 <td class="top">
-<a>Rescorla, E.</a>, "<a href="http://tools.ietf.org/html/draft-ietf-tls-tls13-28">The Transport Layer Security (TLS) Protocol Version 1.3</a>", Internet-Draft draft-ietf-tls-tls13-28, March 2018.</td>
+<a>Sullivan, N.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-exported-authenticator-08">Exported Authenticators in TLS</a>", Internet-Draft draft-ietf-tls-exported-authenticator-08, October 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC1035">[RFC1035]</b></td>
 <td class="top">
-<a>Mockapetris, P.</a>, "<a href="http://tools.ietf.org/html/rfc1035">Domain names - implementation and specification</a>", STD 13, RFC 1035, DOI 10.17487/RFC1035, November 1987.</td>
+<a>Mockapetris, P.</a>, "<a href="https://tools.ietf.org/html/rfc1035">Domain names - implementation and specification</a>", STD 13, RFC 1035, DOI 10.17487/RFC1035, November 1987.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
 <td class="top">
-<a>Bradner, S.</a>, "<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
+<a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC4408">[RFC4408]</b></td>
 <td class="top">
-<a>Wong, M.</a> and <a>W. Schlitt</a>, "<a href="http://tools.ietf.org/html/rfc4408">Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1</a>", RFC 4408, DOI 10.17487/RFC4408, April 2006.</td>
+<a>Wong, M.</a> and <a>W. Schlitt</a>, "<a href="https://tools.ietf.org/html/rfc4408">Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1</a>", RFC 4408, DOI 10.17487/RFC4408, April 2006.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC6066">[RFC6066]</b></td>
 <td class="top">
-<a>Eastlake 3rd, D.</a>, "<a href="http://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>", RFC 6066, DOI 10.17487/RFC6066, January 2011.</td>
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>", RFC 6066, DOI 10.17487/RFC6066, January 2011.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC6234">[RFC6234]</b></td>
 <td class="top">
-<a>Eastlake 3rd, D.</a> and <a>T. Hansen</a>, "<a href="http://tools.ietf.org/html/rfc6234">US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</a>", RFC 6234, DOI 10.17487/RFC6234, May 2011.</td>
+<a>Eastlake 3rd, D.</a> and <a>T. Hansen</a>, "<a href="https://tools.ietf.org/html/rfc6234">US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</a>", RFC 6234, DOI 10.17487/RFC6234, May 2011.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7540">[RFC7540]</b></td>
 <td class="top">
-<a>Belshe, M.</a>, <a>Peon, R.</a> and <a>M. Thomson</a>, "<a href="http://tools.ietf.org/html/rfc7540">Hypertext Transfer Protocol Version 2 (HTTP/2)</a>", RFC 7540, DOI 10.17487/RFC7540, May 2015.</td>
+<a>Belshe, M.</a>, <a>Peon, R.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/rfc7540">Hypertext Transfer Protocol Version 2 (HTTP/2)</a>", RFC 7540, DOI 10.17487/RFC7540, May 2015.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7838">[RFC7838]</b></td>
+<td class="top">
+<a>Nottingham, M.</a>, <a>McManus, P.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7838">HTTP Alternative Services</a>", RFC 7838, DOI 10.17487/RFC7838, April 2016.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC8174">[RFC8174]</b></td>
 <td class="top">
-<a>Leiba, B.</a>, "<a href="http://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
+<a>Leiba, B.</a>, "<a href="https://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8446">[RFC8446]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/rfc8446">The Transport Layer Security (TLS) Protocol Version 1.3</a>", RFC 8446, DOI 10.17487/RFC8446, August 2018.</td>
 </tr>
 </tbody></table>
 <h1 id="rfc.references.2">
@@ -807,34 +873,35 @@ _esni.example.com. 60S IN TXT "..." "..."
 <tr>
 <td class="reference"><b id="I-D.ietf-doh-dns-over-https">[I-D.ietf-doh-dns-over-https]</b></td>
 <td class="top">
-<a>Hoffman, P.</a> and <a>P. McManus</a>, "<a href="http://tools.ietf.org/html/draft-ietf-doh-dns-over-https-12">DNS Queries over HTTPS (DoH)</a>", Internet-Draft draft-ietf-doh-dns-over-https-12, June 2018.</td>
+<a>Hoffman, P.</a> and <a>P. McManus</a>, "<a href="https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-14">DNS Queries over HTTPS (DoH)</a>", Internet-Draft draft-ietf-doh-dns-over-https-14, August 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.ietf-tls-sni-encryption">[I-D.ietf-tls-sni-encryption]</b></td>
 <td class="top">
-<a>Huitema, C.</a> and <a>E. Rescorla</a>, "<a href="http://tools.ietf.org/html/draft-ietf-tls-sni-encryption-03">Issues and Requirements for SNI Encryption in TLS</a>", Internet-Draft draft-ietf-tls-sni-encryption-03, May 2018.</td>
+<a>Huitema, C.</a> and <a>E. Rescorla</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-sni-encryption-04">Issues and Requirements for SNI Encryption in TLS</a>", Internet-Draft draft-ietf-tls-sni-encryption-04, November 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.kazuho-protected-sni">[I-D.kazuho-protected-sni]</b></td>
 <td class="top">
-<a>Oku, K.</a>, "<a href="http://tools.ietf.org/html/draft-kazuho-protected-sni-00">TLS Extensions for Protecting SNI</a>", Internet-Draft draft-kazuho-protected-sni-00, July 2017.</td>
+<a>Oku, K.</a>, "<a href="https://tools.ietf.org/html/draft-kazuho-protected-sni-00">TLS Extensions for Protecting SNI</a>", Internet-Draft draft-kazuho-protected-sni-00, July 2017.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7858">[RFC7858]</b></td>
 <td class="top">
-<a>Hu, Z.</a>, <a>Zhu, L.</a>, <a>Heidemann, J.</a>, <a>Mankin, A.</a>, <a>Wessels, D.</a> and <a>P. Hoffman</a>, "<a href="http://tools.ietf.org/html/rfc7858">Specification for DNS over Transport Layer Security (TLS)</a>", RFC 7858, DOI 10.17487/RFC7858, May 2016.</td>
+<a>Hu, Z.</a>, <a>Zhu, L.</a>, <a>Heidemann, J.</a>, <a>Mankin, A.</a>, <a>Wessels, D.</a> and <a>P. Hoffman</a>, "<a href="https://tools.ietf.org/html/rfc7858">Specification for DNS over Transport Layer Security (TLS)</a>", RFC 7858, DOI 10.17487/RFC7858, May 2016.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC8094">[RFC8094]</b></td>
 <td class="top">
-<a>Reddy, T.</a>, <a>Wing, D.</a> and <a>P. Patil</a>, "<a href="http://tools.ietf.org/html/rfc8094">DNS over Datagram Transport Layer Security (DTLS)</a>", RFC 8094, DOI 10.17487/RFC8094, February 2017.</td>
+<a>Reddy, T.</a>, <a>Wing, D.</a> and <a>P. Patil</a>, "<a href="https://tools.ietf.org/html/rfc8094">DNS over Datagram Transport Layer Security (DTLS)</a>", RFC 8094, DOI 10.17487/RFC8094, February 2017.</td>
 </tr>
 </tbody></table>
 <h1 id="rfc.appendix.A">
-<a href="#rfc.appendix.A">Appendix A.</a> <a href="#communicating-sni" id="communicating-sni">Communicating SNI to Backend Server</a>
+<a href="#rfc.appendix.A">Appendix A.</a> <a href="#communicating-sni" id="communicating-sni">Communicating SNI and Nonce to Backend Server</a>
 </h1>
-<p id="rfc.section.A.p.1">As noted in <a href="#backend-server-behavior" class="xref">Section 5.4</a>, the backend server will generally not know the true SNI in Split Mode. It is possible for the client-facing server to communicate the true SNI to the backend server, but at the cost of having that communication not be unmodified TLS 1.3.  The basic idea is to have a shared key between the client-facing server and the backend server (this can be a symmetric key) and use it to AEAD-encrypt Z and send the encrypted blob at the beginning of the connection before the ClientHello. The backend server can then decrypt ESNI to recover the true SNI.</p>
-<p id="rfc.section.A.p.2">An obvious alternative here would be to have the client-facing server forward the true SNI, but that would allow the client-facing server to lie. In this design, the attacker would need to be able to find a Z which would expand into a key that would validly AEAD-encrypt a message of his choice, which should be intractable (Hand-waving alert!).</p>
+<p id="rfc.section.A.p.1">When operating in Split Mode, backend servers will not have access to PaddedServerNameList.sni or ClientESNIInner.nonce without access to the ESNI keys or a way to decrypt ClientEncryptedSNI.encrypted_sni.</p>
+<p id="rfc.section.A.p.2">One way to address this for a single connection, at the cost of having communication not be unmodified TLS 1.3, is as follows.  Assume there is a shared (symmetric) key between the client-facing server and the backend server and use it to AEAD-encrypt Z and send the encrypted blob at the beginning of the connection before the ClientHello. The backend server can then decrypt ESNI to recover the true SNI and nonce.</p>
+<p id="rfc.section.A.p.3">Another way for backend servers to access the true SNI and nonce is by the client-facing server sharing the ESNI keys.</p>
 <h1 id="rfc.appendix.B">
 <a href="#rfc.appendix.B">Appendix B.</a> <a href="#alternative-sni-protection-designs" id="alternative-sni-protection-designs">Alternative SNI Protection Designs</a>
 </h1>
@@ -877,7 +944,7 @@ _esni.example.com. 60S IN TXT "..." "..."
 <li>A conformant middlebox will strip every extension, which might result in a ClientHello which is just unacceptable to the server (more analysis needed).</li>
 </ul>
 <h1 id="rfc.appendix.D">
-<a href="#rfc.appendix.D">Appendix D.</a> <a href="#acknowledgments" id="acknowledgments">Acknowledgments</a>
+<a href="#rfc.appendix.D">Appendix D.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a>
 </h1>
 <p id="rfc.section.D.p.1">This document draws extensively from ideas in <a href="#I-D.kazuho-protected-sni" class="xref">[I-D.kazuho-protected-sni]</a>, but is a much more limited mechanism because it depends on the DNS for the protection of the ESNI key. Richard Barnes, Christian Huitema, Patrick McManus, Matthew Prince, Nick Sullivan, Martin Thomson, and Chris Wood also provided important ideas.</p>
 <h1 id="rfc.authors"><a href="#rfc.authors">Authors' Addresses</a></h1>
