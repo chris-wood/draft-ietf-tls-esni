@@ -76,7 +76,7 @@ Table of Contents
      5.1.  Client Behavior . . . . . . . . . . . . . . . . . . . . .  11
      5.2.  Client-Facing Server Behavior . . . . . . . . . . . . . .  13
      5.3.  Shared Mode Server Behavior . . . . . . . . . . . . . . .  14
-     5.4.  Split Mode Server Behavior  . . . . . . . . . . . . . . .  14
+     5.4.  Split Mode Server Behavior  . . . . . . . . . . . . . . .  15
    6.  Compatibility Issues  . . . . . . . . . . . . . . . . . . . .  15
      6.1.  Misconfiguration  . . . . . . . . . . . . . . . . . . . .  15
      6.2.  Middleboxes . . . . . . . . . . . . . . . . . . . . . . .  15
@@ -84,13 +84,13 @@ Table of Contents
      7.1.  Why is cleartext DNS OK?  . . . . . . . . . . . . . . . .  16
      7.2.  Comparison Against Criteria . . . . . . . . . . . . . . .  16
        7.2.1.  Mitigate against replay attacks . . . . . . . . . . .  16
-       7.2.2.  Avoid widely-deployed shared secrets  . . . . . . . .  16
+       7.2.2.  Avoid widely-deployed shared secrets  . . . . . . . .  17
        7.2.3.  Prevent SNI-based DoS attacks . . . . . . . . . . . .  17
        7.2.4.  Do not stick out  . . . . . . . . . . . . . . . . . .  17
        7.2.5.  Forward secrecy . . . . . . . . . . . . . . . . . . .  17
        7.2.6.  Proper security context . . . . . . . . . . . . . . .  17
        7.2.7.  Split server spoofing . . . . . . . . . . . . . . . .  17
-       7.2.8.  Supporting multiple protocols . . . . . . . . . . . .  17
+       7.2.8.  Supporting multiple protocols . . . . . . . . . . . .  18
      7.3.  Misrouting  . . . . . . . . . . . . . . . . . . . . . . .  18
    8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  18
      8.1.  Update of the TLS ExtensionType Registry  . . . . . . . .  18
@@ -99,12 +99,12 @@ Table of Contents
      9.1.  Normative References  . . . . . . . . . . . . . . . . . .  18
      9.2.  Informative References  . . . . . . . . . . . . . . . . .  20
    Appendix A.  Communicating SNI and Nonce to Backend Server  . . .  20
-   Appendix B.  Alternative SNI Protection Designs . . . . . . . . .  20
+   Appendix B.  Alternative SNI Protection Designs . . . . . . . . .  21
      B.1.  TLS-layer . . . . . . . . . . . . . . . . . . . . . . . .  21
        B.1.1.  TLS in Early Data . . . . . . . . . . . . . . . . . .  21
        B.1.2.  Combined Tickets  . . . . . . . . . . . . . . . . . .  21
      B.2.  Application-layer . . . . . . . . . . . . . . . . . . . .  21
-       B.2.1.  HTTP/2 CERTIFICATE Frames . . . . . . . . . . . . . .  21
+       B.2.1.  HTTP/2 CERTIFICATE Frames . . . . . . . . . . . . . .  22
    Appendix C.  Total Client Hello Encryption  . . . . . . . . . . .  22
 
 
@@ -114,7 +114,7 @@ Rescorla, et al.         Expires August 17, 2019                [Page 2]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
-   Appendix D.  Acknowledgements . . . . . . . . . . . . . . . . . .  22
+   Appendix D.  Acknowledgements . . . . . . . . . . . . . . . . . .  23
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  23
 
 1.  Introduction
@@ -467,9 +467,9 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    TXT record.
 
    Clients SHOULD initiate ESNI queries in parallel alongside normal A
-   or AAAA queries.  The following algorithm describes how clients
-   should process ESNIKeys responses as they arrive.
-
+   or AAAA queries.  The following algorithm describes a procedure by
+   which clients can process ESNIKeys responses as they arrive to
+   produce addresses for ESNI-capable hosts.
 
 
 
@@ -540,19 +540,19 @@ address(es) of ESNIKeys.host_pointer.name and initiate TLS to the resulting addr
 
    CD (Connection Delay) is a configurable parameter.  The recommended
    value is 50 milliseconds, as per the guidance in [RFC8305].  This
-   algorithm ensures that clients can deterministically resolve
-   addresses of ESNI-capable domains.  Clients who do not wish to spend
-   a round trip to resolve ESNIKeys host addresses may initiate TLS to
-   the hosts specified in the A or AAAA responses without ESNI.
+   algorithm (probabilistically) converges towards addresses of ESNI-
+   capable domains.  Clients who do not wish to spend a round trip to
+   resolve ESNIKeys host addresses may initiate TLS to the hosts
+   specified in the A or AAAA responses without ESNI.  Similarly,
+   clients that do not wish to implement ESNI support for incomplete
+   ESNIKeys addresses may skip all sets using them.  ESNI-capable
+   clients MUST support ESNIKeys with full addresses.
 
 5.  The "encrypted_server_name" extension
 
    The encrypted SNI is carried in an "encrypted_server_name" extension,
    defined as follows:
 
-      enum {
-          encrypted_server_name(0xffce), (65535)
-      } ExtensionType;
 
 
 
@@ -561,6 +561,10 @@ Rescorla, et al.         Expires August 17, 2019               [Page 10]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+      enum {
+          encrypted_server_name(0xffce), (65535)
+      } ExtensionType;
 
    For clients (in ClientHello), this extension contains the following
    ClientEncryptedSNI structure:
@@ -606,10 +610,6 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    select an appropriate group or suite it SHOULD ignore that ESNIKeys
    value and MAY attempt to use another value provided by the server
    (recall that servers might provide multiple ESNIKeys in response to a
-   ESNI TXT query).  The client MUST NOT send encrypted SNI using groups
-   or cipher suites not advertised by the server.
-
-
 
 
 
@@ -617,6 +617,9 @@ Rescorla, et al.         Expires August 17, 2019               [Page 11]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+   ESNI TXT query).  The client MUST NOT send encrypted SNI using groups
+   or cipher suites not advertised by the server.
 
    Let Z be the DH shared secret derived from a key share in ESNIKeys
    and the corresponding client share in ClientEncryptedSNI.key_share.
@@ -662,9 +665,6 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    structure ESNIKeys.padded_length bytes long.  The purpose of the
    padding is to prevent attackers from using the length of the
    "encrypted_server_name" extension to determine the true SNI.  If the
-   serialized ServerNameList is longer than ESNIKeys.padded_length, the
-   client MUST NOT use the "encrypted_server_name" extension.
-
 
 
 
@@ -673,6 +673,9 @@ Rescorla, et al.         Expires August 17, 2019               [Page 12]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+   serialized ServerNameList is longer than ESNIKeys.padded_length, the
+   client MUST NOT use the "encrypted_server_name" extension.
 
    The ClientEncryptedSNI.encrypted_sni value is then computed using the
    usual TLS 1.3 AEAD:
@@ -718,9 +721,6 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    o  If it is unable to negotiate TLS 1.3 or greater, it MUST abort the
       connection with a "handshake_failure" alert.
 
-   o  If the ClientEncryptedSNI.record_digest value does not match the
-      cryptographic hash of any known ESNIKeys structure, it MUST abort
-      the connection with an "illegal_parameter" alert.  This is
 
 
 
@@ -730,6 +730,9 @@ Rescorla, et al.         Expires August 17, 2019               [Page 13]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
+   o  If the ClientEncryptedSNI.record_digest value does not match the
+      cryptographic hash of any known ESNIKeys structure, it MUST abort
+      the connection with an "illegal_parameter" alert.  This is
       necessary to prevent downgrade attacks.  [[OPEN ISSUE: We looked
       at ignoring the extension but concluded this was better.]]
 
@@ -773,11 +776,8 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    EncryptedExtensions, and the value of this extension MUST match
    PaddedServerNameList.nonce.
 
-5.4.  Split Mode Server Behavior
 
-   In Split Mode, the backend server must know
-   PaddedServerNameList.nonce to echo it back in EncryptedExtensions and
-   complete the handshake.  Appendix A describes one mechanism for
+
 
 
 
@@ -786,6 +786,11 @@ Rescorla, et al.         Expires August 17, 2019               [Page 14]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
+5.4.  Split Mode Server Behavior
+
+   In Split Mode, the backend server must know
+   PaddedServerNameList.nonce to echo it back in EncryptedExtensions and
+   complete the handshake.  Appendix A describes one mechanism for
    sending both PaddedServerNameList.sni and ClientESNIInner.nonce to
    the backend server.  Thus, backend servers function the same as
    servers operating in Shared Mode.
@@ -830,11 +835,6 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    In order to enable this mechanism, client-facing servers SHOULD NOT
    require SNI, but rather respond with some default certificate.
 
-   A non-conformant MITM proxy will forward the ESNI extension,
-   substituting its own KeyShare value, with the result that the client-
-   facing server will not be able to decrypt the SNI.  This causes a
-   hard failure.  Detecting this case is difficult, but clients might
-
 
 
 Rescorla, et al.         Expires August 17, 2019               [Page 15]
@@ -842,6 +842,10 @@ Rescorla, et al.         Expires August 17, 2019               [Page 15]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
+   A non-conformant MITM proxy will forward the ESNI extension,
+   substituting its own KeyShare value, with the result that the client-
+   facing server will not be able to decrypt the SNI.  This causes a
+   hard failure.  Detecting this case is difficult, but clients might
    opt to attempt captive portal detection to see if they are in the
    presence of a MITM proxy, and if so disable ESNI.  Hopefully, the TLS
    1.3 deployment experience has cleaned out most such proxies.
@@ -885,11 +889,7 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    Hello, with a different ephemeral key share, as the terminating
    server will fail to decrypt and verify the ESNI value.
 
-7.2.2.  Avoid widely-deployed shared secrets
 
-   This design depends upon DNS as a vehicle for semi-static public key
-   distribution.  Server operators may partition their private keys
-   however they see fit provided each server behind an IP address has
 
 
 
@@ -898,6 +898,11 @@ Rescorla, et al.         Expires August 17, 2019               [Page 16]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
+7.2.2.  Avoid widely-deployed shared secrets
+
+   This design depends upon DNS as a vehicle for semi-static public key
+   distribution.  Server operators may partition their private keys
+   however they see fit provided each server behind an IP address has
    the corresponding private key to decrypt a key.  Thus, when one ESNI
    key is provided, sharing is optimally bound by the number of hosts
    that share an IP address.  Server operators may further limit sharing
@@ -940,12 +945,7 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
    operating in Split Mode is not possible.  See Section 7.1 for more
    details regarding cleartext DNS.
 
-7.2.8.  Supporting multiple protocols
 
-   This design has no impact on application layer protocol negotiation.
-   It may affect connection routing, server certificate selection, and
-   client certificate verification.  Thus, it is compatible with
-   multiple protocols.
 
 
 
@@ -953,6 +953,13 @@ Rescorla, et al.         Expires August 17, 2019               [Page 17]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+7.2.8.  Supporting multiple protocols
+
+   This design has no impact on application layer protocol negotiation.
+   It may affect connection routing, server certificate selection, and
+   client certificate verification.  Thus, it is compatible with
+   multiple protocols.
 
 7.3.  Misrouting
 
@@ -995,13 +1002,6 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
               of Attribute Leaves", draft-ietf-dnsop-attrleaf-16 (work
               in progress), November 2018.
 
-   [I-D.ietf-tls-exported-authenticator]
-              Sullivan, N., "Exported Authenticators in TLS", draft-
-              ietf-tls-exported-authenticator-08 (work in progress),
-              October 2018.
-
-
-
 
 
 
@@ -1009,6 +1009,11 @@ Rescorla, et al.         Expires August 17, 2019               [Page 18]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+   [I-D.ietf-tls-exported-authenticator]
+              Sullivan, N., "Exported Authenticators in TLS", draft-
+              ietf-tls-exported-authenticator-08 (work in progress),
+              October 2018.
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
@@ -1052,11 +1057,6 @@ Internet-Draft           TLS 1.3 SNI Encryption            February 2019
               DOI 10.17487/RFC8305, December 2017,
               <https://www.rfc-editor.org/info/rfc8305>.
 
-   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
-              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
-              <https://www.rfc-editor.org/info/rfc8446>.
-
-
 
 
 
@@ -1065,6 +1065,10 @@ Rescorla, et al.         Expires August 17, 2019               [Page 19]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
+              <https://www.rfc-editor.org/info/rfc8446>.
 
 9.2.  Informative References
 
@@ -1109,10 +1113,6 @@ Appendix A.  Communicating SNI and Nonce to Backend Server
    Another way for backend servers to access the true SNI and nonce is
    by the client-facing server sharing the ESNI keys.
 
-Appendix B.  Alternative SNI Protection Designs
-
-   Alternative approaches to encrypted SNI may be implemented at the TLS
-   or application layer.  In this section we describe several
 
 
 
@@ -1122,6 +1122,10 @@ Rescorla, et al.         Expires August 17, 2019               [Page 20]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
+Appendix B.  Alternative SNI Protection Designs
+
+   Alternative approaches to encrypted SNI may be implemented at the TLS
+   or application layer.  In this section we describe several
    alternatives and discuss drawbacks in comparison to the design in
    this document.
 
@@ -1163,13 +1167,9 @@ B.1.2.  Combined Tickets
 
 B.2.  Application-layer
 
-B.2.1.  HTTP/2 CERTIFICATE Frames
 
-   In this variant, clients request secondary certificates with
-   CERTIFICATE_REQUEST HTTP/2 frames after TLS connection completion.
-   In response, servers supply certificates via TLS exported
-   authenticators [I-D.ietf-tls-exported-authenticator] in CERTIFICATE
-   frames.  Clients use a generic SNI for the underlying client-facing
+
+
 
 
 
@@ -1178,6 +1178,13 @@ Rescorla, et al.         Expires August 17, 2019               [Page 21]
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
 
+B.2.1.  HTTP/2 CERTIFICATE Frames
+
+   In this variant, clients request secondary certificates with
+   CERTIFICATE_REQUEST HTTP/2 frames after TLS connection completion.
+   In response, servers supply certificates via TLS exported
+   authenticators [I-D.ietf-tls-exported-authenticator] in CERTIFICATE
+   frames.  Clients use a generic SNI for the underlying client-facing
    server TLS connection.  Problems with this approach include: (1) one
    additional round trip before peer authentication, (2) non-trivial
    application-layer dependencies and interaction, and (3) obtaining the
@@ -1216,14 +1223,7 @@ Appendix C.  Total Client Hello Encryption
       result in a ClientHello which is just unacceptable to the server
       (more analysis needed).
 
-Appendix D.  Acknowledgements
 
-   This document draws extensively from ideas in
-   [I-D.kazuho-protected-sni], but is a much more limited mechanism
-   because it depends on the DNS for the protection of the ESNI key.
-   Richard Barnes, Christian Huitema, Patrick McManus, Matthew Prince,
-   Nick Sullivan, Martin Thomson, and Chris Wood also provided important
-   ideas.
 
 
 
@@ -1233,6 +1233,15 @@ Rescorla, et al.         Expires August 17, 2019               [Page 22]
 
 Internet-Draft           TLS 1.3 SNI Encryption            February 2019
 
+
+Appendix D.  Acknowledgements
+
+   This document draws extensively from ideas in
+   [I-D.kazuho-protected-sni], but is a much more limited mechanism
+   because it depends on the DNS for the protection of the ESNI key.
+   Richard Barnes, Christian Huitema, Patrick McManus, Matthew Prince,
+   Nick Sullivan, Martin Thomson, and Chris Wood also provided important
+   ideas.
 
 Authors' Addresses
 
@@ -1258,15 +1267,6 @@ Authors' Addresses
    Apple, Inc.
 
    Email: cawood@apple.com
-
-
-
-
-
-
-
-
-
 
 
 

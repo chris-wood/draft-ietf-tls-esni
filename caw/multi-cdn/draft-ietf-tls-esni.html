@@ -666,7 +666,7 @@ _esni.example.com. 60S IN TXT "..." "..."
 <a href="#rfc.section.4.3">4.3.</a> <a href="#esni-resolution" id="esni-resolution">Encrypted SNI DNS Resolution</a>
 </h1>
 <p id="rfc.section.4.3.p.1">Clients obtain ESNI records by querying DNS for ESNI-enabled server domains.  In cases where the domain of the A or AAAA records being resolved do not match the SNI Server Name, such as when <a href="#RFC7838" class="xref">[RFC7838]</a> is being used, the alternate domain should be used for querying the ESNI TXT record.</p>
-<p id="rfc.section.4.3.p.2">Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.  The following algorithm describes how clients should process ESNIKeys responses as they arrive.</p>
+<p id="rfc.section.4.3.p.2">Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.  The following algorithm describes a procedure by which clients can process ESNIKeys responses as they arrive to produce addresses for ESNI-capable hosts.</p>
 <pre>
 1. If an ESNIKeys response arrives before an A or AAAA response, and the ESNIKeys
 response contains a full address, clients should initiate TLS with ESNI to the
@@ -700,7 +700,7 @@ address(es) of ESNIKeys.host_pointer.name and initiate TLS to the resulting addr
 
 7. In all other cases, raise an error.
 </pre>
-<p id="rfc.section.4.3.p.3">CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds, as per the guidance in <a href="#RFC8305" class="xref">[RFC8305]</a>. This algorithm ensures that clients can deterministically resolve addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to resolve ESNIKeys host addresses may initiate TLS to the hosts specified in the A or AAAA responses without ESNI.</p>
+<p id="rfc.section.4.3.p.3">CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds, as per the guidance in <a href="#RFC8305" class="xref">[RFC8305]</a>. This algorithm (probabilistically) converges towards addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to resolve ESNIKeys host addresses may initiate TLS to the hosts specified in the A or AAAA responses without ESNI. Similarly, clients that do not wish to implement ESNI support for incomplete ESNIKeys addresses may skip all sets using them. ESNI-capable clients MUST support ESNIKeys with full addresses.</p>
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#esni-extension" id="esni-extension">The &#8220;encrypted_server_name&#8221; extension</a>
 </h1>
