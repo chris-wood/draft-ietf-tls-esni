@@ -361,49 +361,48 @@ SNI Server Name, such as when {{!RFC7838}} is being used, the alternate domain s
 be used for querying the ESNI TXT record.
 
 Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.
-There are generally two cases that determine how clients should handle ESNIKeys
-responses: (1) ESNIKeys have full addresses, and (2) ESNIKeys have address net masks.
-The following algorithm describes how clients should process ESNIKeys responses with full
-addresses as they arrive.
+The following algorithm describes how clients should process ESNIKeys responses as
+they arrive.
 
 ~~~
-1. If an ESNIKeys response arrives before an A or AAAA response, clients should connect to said address.
-2. If an A or AAAA response arrives before the ESNIKeys response, clients should wait up
-to CD seconds before attempting to initiate a connection to an address. If an ESNIKeys response
-does not arrive in this time, clients should initiate a connection to the provided address(es).
-If an ESNIKeys response does arrive in this time, clients should connect to said address.
+1. If an ESNIKeys response arrives before an A or AAAA response, and the ESNIKeys
+response contains a full address, clients should initiate TLS with ESNI to the
+provided address(es).
+
+2. If an A or AAAA response arrives before the ESNIKeys response, clients should
+wait up to CD seconds before initiating TLS to either address. (Clients may begin
+  TCP connections in this time. QUIC connections should wait.) If an ESNIKeys
+  response does not arrive in this time, clients should initiate TLS without ESNI
+  to the provided address(es).
+
+3. If an ESNIKeys response arrives before this time, and if the address netmask
+matches that in the corresponding A or AAAA response, then clients should initiate
+TLS with ESNI to said address(es). (An ESNIKeys record with a full address has a
+  full netmask, and therefore the match must be exact.) Clients may delay this
+  check until both A and AAAA responses arrive, or if a Resolution Delay timeout
+  occurs, according to {{RFC8305}}.
+
+4. If the address netmask does not match the corresponding A or AAAA response,
+and the A or AAAA response yielded a terminal CNAME that matches ESNIKeys.host_pointer.name,
+then clients should initiate TLS using ESNI to the address(es) in the A or AAAA records.
+
+5. If the address netmask does not match the corresponding A or AAAA response,
+and neither the A or AAAA queries yielded a CNAME that matches ESNIKeys.host_pointer.name,
+clients should resolve the address of ESNIKeys.host_pointer.name using an
+address type that matches the A or AAAA response. Clients should initiate TLS
+using ENSI to the resulting address(es) when A or AAAA resolution completes.
+
+6. If the ESNIKeys.host_pointer address set is empty, clients should resolve the
+address(es) of ESNIKeys.host_pointer.name and initiate TLS to the resulting address(es).
+
+7. In all other cases, raise an error.
 ~~~
 
 CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds,
-as per the guidance in {{!RFC8305}}.
-
-The following algorithm describes how clients should process ESNIKeys responses with
-address netmasks.
-
-~~~
-1. If an A or AAAA response arrives before the ESNIKeys response, clients should wait up
-to CD seconds before attempting to initiate a connection to an address. If an ESNIKeys response
-does not arrive in this time, clients should initiate a connection to the provided address(es).
-2. If an ESNIKeys response arrives before this time, and if the address netmask matches that
-in the corresponding A or AAAA response, then clients should connect to said address.
-Clients may delay this check until both A and AAAA responses arrive, or if a Resolution Delay
-timeout occurs, according to {{RFC8305}}.
-3. If the address netmask does not match the corresponding A or AAAA response, and the
-A or AAAA response yielded a terminal CNAME that matches ESNIKeys.host_pointer.name,
-then clients should connect to said address.
-4. If the address netmask does not match the corresponding A or AAAA response, and there is no
-CNAME clients should
-resolve the address of ESNIKeys.host_pointer.name using an address type that matches the
-A or AAAA response. Clients should connect to the resulting address when resolution completes.
-5. If the ESNIKeys.host_pointer address set is empty, clients should resolve the address of
-ESNIKeys.host_pointer.name and connect to the result.
-6. In all other cases, raise an error.
-~~~
-
-This algorithm ensures that clients can deterministically resolve addresses of ESNI-capable
-domains, thereby permitting hard failures on ESNI mismatch. Clients who do not wish to spend
-a round trip to resolve the ESNIKeys host address may connect to the hosts specified in the A
-or AAAA responses with plaintext SNI.
+as per the guidance in {{!RFC8305}}. This algorithm ensures that clients can deterministically
+resolve addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to
+resolve ESNIKeys host addresses may initiate TLS to the hosts specified in the A or AAAA
+responses without ESNI.
 
 # The "encrypted_server_name" extension {#esni-extension}
 
