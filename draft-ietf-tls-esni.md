@@ -174,16 +174,17 @@ provider's public key. The provider can then decrypt the extension
 and either terminate the connection (in Shared Mode) or forward
 it to the backend server (in Split Mode).
 
-# Publishing the SNI Encryption Key in DNS {#publishing-key}
+# Publishing the SNI Encryption Key in the DNS {#publishing-key}
 
 Publishing ESNI keys in DNS requires care to ensure correct behavior.
-At least two requirements must be met. First, resolution of an ESNIKeys
-record, described in {{esni-record}}, must yield information necessary for
-deterministic client connections to a host which is guaranteed to possess
-the corresponding ESNI private key. This is necessary to avoid ESNI failure
-fallback. Servers MUST ensure that if multiple A or AAAA records are returned
-for a domain with ESNI support, all the servers pointed to by those records are
-able to handle the keys returned as part of a ESNIKeys record for that domain.
+There are deployment environments in which a domain is served by multiple server
+operators who do not manage the ESNI Keys. Because ESNIKeys and A/AAAA lookup
+are independent, it is therefore possible to obtain an ESNIKeys record which does
+not match the A/AAAA records. (That is, the host to which an A or AAAA record
+refers is not in possession of the ESNI keys.) Naively using this record would
+result in handshake failure, and possibly require fallback to plaintext SNI.
+The design of the system must therefore allow clients to detect and recover
+from this situation.
 
 Servers operating in Split Mode SHOULD have DNS configured to return
 the same A (or AAAA) record for all ESNI-enabled servers they service. This yields
@@ -193,13 +194,6 @@ an attacker which can enumerate the set of ESNI-enabled domains supported
 by a client-facing server can guess the correct SNI with probability at least
 1/K, where K is the size of this ESNI-enabled server anonymity set. This probability
 may be increased via traffic analysis or other mechanisms.
-
-Secondly, and relatedly, presence of DNS-based load balancers
-such as Cedexis, which distribute DNS queries across different CDN providers,
-must not lead to ESNI key and A/AAAA record provider mismatches. That is,
-it must not be possible for clients to receive A/AAAA records that point to
-one service provider, while receiving ESNI keys that refer to a different
-provider.
 
 The following sections describe a DNS record format that achieve these goals.
 
@@ -222,12 +216,12 @@ These "host pointers" are encoded using the following structure.
         AddressType address_type;
         select (address_type) {
             case address_v4: {
+                uint8 ipv4Length;
                 opaque ipv4Address[4];
-                opaque ipv4Mask[4];
             }
             case address_v6: {
+                uint8 ipv6Length;
                 opaque ipv6Address[16];
-                opaque ipv6Mask[16];
             }
         }
     } Address;
@@ -239,12 +233,12 @@ These "host pointers" are encoded using the following structure.
 ~~~~
 
 name
-: The terminal name for which resolution MUST yield valid A or
+: The terminal name for which resolution must yield valid A or
 AAAA records pointing to a host which holds the private ESNI key.
 
 address_set
 : An optional list of Address entries, each containing a single IPv4 or IPv6
-SIDR block, possibly of length 1.
+CIDR block, possibly of length 1.
 
 Use of this structure during the ESNI resolution algorithm is described in {{esni-resolution}}.
 
@@ -363,36 +357,53 @@ RDLENGTH is only 16 bits {{RFC1035}}.
 
 Clients obtain ESNI records by querying DNS for ESNI-enabled server domains.
 In cases where the domain of the A or AAAA records being resolved do not match the
-SNI Server Name, such as when {{!RFC7838}} is being used, the SNI domain should
+SNI Server Name, such as when {{!RFC7838}} is being used, the alternate domain should
 be used for querying the ESNI TXT record.
 
-Clients SHOULD initiate these queries in parallel alongside normal A or AAAA queries,
-preferring AAAA if possible. Specifically, clients should order their queries as
-AAAA, ESNI, and A, thereby preferring IPv6 and ESNI over IPv4. Clients SHOULD block
-TLS handshakes until complete perhaps by timing out. If responses arrive
-in order, clients SHOULD process them according to the following algorithm to produce
-a set of IPv4 or IPv6 addresses to use for connecting to the ESNI-enabled server.
-(This algorithm is written assuming one ESNIKeys record response, though it generalizes
-to multiple naturally.)
+Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.
+There are generally two cases that determine how clients should handle ESNIKeys
+responses: (1) ESNIKeys have full addresses, and (2) ESNIKeys have address net masks.
+The following algorithm describes how clients should process ESNIKeys responses with full
+addresses as they arrive.
 
 ~~~
-Input: ESNIKeys, A, AAAA
-Output: Set of IPv4 or IPv6 addresses, or an error
-
-1. If the ESNI record carries a HostPointer with full IPv4 or IPv6 addresses, i.e., with a full mask,
-then a client MAY output said addresses and return. (This ignores the result of A and AAAA query responses.)
-2. If the ESNI record does not carry a full address HostPointer, or if a client choosees not to
-use full addresses, said client must compare ESNIKeys.host_pointer.name to the result of the A and AAAA queries.
-2a. If neither the A or AAAA queries yielded a CNAME, then ESNIKeys.host_pointer.name MUST match
-the server domain name used in the A and AAAA query. If it does not, return an error.
-2b. If an A or AAAA query yielded a CNAME, and ESNIKeys.host_pointer.name matches this CNAME,
-the client MUST resolve this CNAME to an A or AAAA answer, and return the resulting addresses.
-2c. If an A or AAAA query yielded a CNAME, and ESNIKeys.host_pointer.name does not match this CNAME,
-and the netmask in the corresponding ESNIKeys.host_pointer address matches the A or AAAA result
-from resolving this CNAME, return these addresses.
-2d. Return an error, as the ESNIKeys record does not contain an address or address mask that matches
-the corresponding A or AAAA query results.
+1. If an ESNIKeys response arrives before an A or AAAA response, clients should connect to said address.
+2. If an A or AAAA response arrives before the ESNIKeys response, clients should wait up
+to CD seconds before attempting to initiate a connection to an address. If an ESNIKeys response
+does not arrive in this time, clients should initiate a connection to the provided address(es).
+If an ESNIKeys response does arrive in this time, clients should connect to said address.
 ~~~
+
+CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds,
+as per the guidance in {{!RFC8305}}.
+
+The following algorithm describes how clients should process ESNIKeys responses with
+address netmasks.
+
+~~~
+1. If an A or AAAA response arrives before the ESNIKeys response, clients should wait up
+to CD seconds before attempting to initiate a connection to an address. If an ESNIKeys response
+does not arrive in this time, clients should initiate a connection to the provided address(es).
+2. If an ESNIKeys response arrives before this time, and if the address netmask matches that
+in the corresponding A or AAAA response, then clients should connect to said address.
+Clients may delay this check until both A and AAAA responses arrive, or if a Resolution Delay
+timeout occurs, according to {{RFC8305}}.
+3. If the address netmask does not match the corresponding A or AAAA response, and the
+A or AAAA response yielded a terminal CNAME that matches ESNIKeys.host_pointer.name,
+then clients should connect to said address.
+4. If the address netmask does not match the corresponding A or AAAA response, and there is no
+CNAME clients should
+resolve the address of ESNIKeys.host_pointer.name using an address type that matches the
+A or AAAA response. Clients should connect to the resulting address when resolution completes.
+5. If the ESNIKeys.host_pointer address set is empty, clients should resolve the address of
+ESNIKeys.host_pointer.name and connect to the result.
+6. In all other cases, raise an error.
+~~~
+
+This algorithm ensures that clients can deterministically resolve addresses of ESNI-capable
+domains, thereby permitting hard failures on ESNI mismatch. Clients who do not wish to spend
+a round trip to resolve the ESNIKeys host address may connect to the hosts specified in the A
+or AAAA responses with plaintext SNI.
 
 # The "encrypted_server_name" extension {#esni-extension}
 
