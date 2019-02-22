@@ -328,12 +328,12 @@ ul.toc li {
 <link href="#rfc.authors" rel="Chapter">
 
 
-  <meta name="generator" content="xml2rfc version 2.19.0 - https://tools.ietf.org/tools/xml2rfc" />
+  <meta name="generator" content="xml2rfc version 2.19.1 - https://tools.ietf.org/tools/xml2rfc" />
   <link rel="schema.dct" href="http://purl.org/dc/terms/" />
 
   <meta name="dct.creator" content="Rescorla, E., Oku, K., Sullivan, N., and C. Wood" />
   <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-tls-esni-latest" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-02-15" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-02-22" />
   <meta name="dct.abstract" content="This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3." />
   <meta name="description" content="This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3." />
 
@@ -357,7 +357,7 @@ ul.toc li {
 <td class="right">K. Oku</td>
 </tr>
 <tr>
-<td class="left">Expires: August 19, 2019</td>
+<td class="left">Expires: August 26, 2019</td>
 <td class="right">Fastly</td>
 </tr>
 <tr>
@@ -378,7 +378,7 @@ ul.toc li {
 </tr>
 <tr>
 <td class="left"></td>
-<td class="right">February 15, 2019</td>
+<td class="right">February 22, 2019</td>
 </tr>
 
     	
@@ -394,7 +394,7 @@ ul.toc li {
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on August 19, 2019.</p>
+<p>This Internet-Draft will expire on August 26, 2019.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -608,7 +608,7 @@ Client &lt;------------------------------------&gt;|                     |
         uint16 padded_length;
         uint64 not_before;
         uint64 not_after;
-        Address address_set&lt;1..2^16-1&gt;;
+        Address address_set&lt;0..2^16-1&gt;;
         Extension extensions&lt;0..2^16-1&gt;;
     } ESNIKeys;
 </pre>
@@ -633,9 +633,9 @@ Client &lt;------------------------------------&gt;|                     |
 <dt>address_set</dt>
 <dd style="margin-left: 8">A set of Address structures containing IPv4 or IPv6 addresses to hosts which have the corresponding private ESNI key.</dd>
 <dt>extensions</dt>
-<dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future; this document does not define any extension.</dd>
+<dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future; this document does not define any extension. An extension may be tagged as mandatory by using an extension type codepoint with the high order bit set to 1. A client which receives a mandatory extension they do not understand must reject the record.</dd>
 </dl>
-<p id="rfc.section.4.2.p.5">The semantics of this structure are simple: any of the listed keys may be used to encrypt the SNI for the associated domain name.  The cipher suite list is orthogonal to the list of keys, so each key may be used with any cipher suite.</p>
+<p id="rfc.section.4.2.p.5">The semantics of this structure are simple: any of the listed keys may be used to encrypt the SNI for the associated domain name.  The cipher suite list is orthogonal to the list of keys, so each key may be used with any cipher suite.  Clients MUST parse the extension list and check for unsupported mandatory extensions. If an unsupported mandatory extension is present, clients MUST reject the ESNIKeys record.</p>
 <p id="rfc.section.4.2.p.6">This structure is placed in the RRData section of a TXT record as a base64-encoded string. If this encoding exceeds the 255 octet limit of TXT strings, it must be split across multiple concatenated strings as per Section 3.1.3 of <a href="#RFC4408" class="xref">[RFC4408]</a>. Servers MAY supply multiple ESNIKeys values, either of the same or of different versions.  This allows a server to support multiple versions at once.  If the server does not supply any ESNIKeys values with a version known to the client, then the client MUST behave as if no ESNIKeys were found.</p>
 <p id="rfc.section.4.2.p.7">The name of each TXT record MUST match the name composed of _esni and the query domain name. That is, if a client queries example.com, the ESNI TXT Resource Record might be:</p>
 <pre>
@@ -652,14 +652,14 @@ _esni.example.com. 60S IN TXT "..." "..."
 <p id="rfc.section.4.3.p.1">Clients obtain ESNI records by querying the DNS for ESNI-enabled server domains.  In cases where the domain of the A or AAAA records being resolved do not match the SNI Server Name, such as when <a href="#RFC7838" class="xref">[RFC7838]</a> is being used, the alternate domain should be used for querying the ESNI TXT record.</p>
 <p id="rfc.section.4.3.p.2">Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.  The following algorithm describes a procedure by which clients can process ESNIKeys responses as they arrive to produce addresses for ESNI-capable hosts.</p>
 <pre>
-1. If an ESNIKeys response arrives before an A or AAAA response, initiate TLS with
-ESNI to the provided address(es).
+1. If an ESNIKeys response with an address set arrives before an A or AAAA response, 
+initiate TLS with ESNI to the provided address(es).
 
 2. If an A or AAAA response arrives before the ESNIKeys response, wait up
 to CD milliseconds before initiating TLS to either address. (Clients may begin
 TCP connections in this time. QUIC connections should wait.) If an ESNIKeys
-response does not arrive in this time, initiate TLS without ESNI to the
-provided address(es).
+response with an address set does not arrive in this time, initiate TLS 
+without ESNI to the provided address(es).
 </pre>
 <p id="rfc.section.4.3.p.3">CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds, as per the guidance in <a href="#RFC8305" class="xref">[RFC8305]</a>.</p>
 <h1 id="rfc.section.5">
