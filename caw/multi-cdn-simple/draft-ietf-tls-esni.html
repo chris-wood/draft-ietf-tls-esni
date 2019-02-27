@@ -672,13 +672,16 @@ _esni.example.com. 60S IN TXT "..." "..."
 <p id="rfc.section.4.2.2.p.2">Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries to obtain address information in a timely manner in the event that ESNI is available.  The following algorithm describes a procedure by which clients can process ESNIKeys responses as they arrive to produce addresses for ESNI-capable hosts.</p>
 <pre>
 1. If an ESNIKeys response with an "address_set" extension arrives before an A or 
-AAAA response, initiate TLS with ESNI to the provided address(es).
+AAAA response, clients SHOULD initiate TLS with ESNI to the provided address(es).
 
-2. If an A or AAAA response arrives before the ESNIKeys response, wait up
+2. If an A or AAAA response arrives before the ESNIKeys response, clients SHOULD wait up
 to CD milliseconds before initiating TLS to either address. (Clients may begin
 TCP connections in this time. QUIC connections should wait.) If an ESNIKeys
-response with an "address_set" extension does not arrive in this time, initiate 
-TLS without ESNI to the provided address(es).
+response with an "address_set" extension arrives in this time, clients SHOULD 
+initiate TLS with ESNI to the provided address(es). If an ESNIKeys response 
+without an "address_set" extension arrives in this time, clients MAY initiate 
+TLS with ESNI to the address(es) in the A or AAAA response. If no ESNIKeys response
+arrives in this time, clients SHOULD initiate TLS without ESNI to the available address(es).
 </pre>
 <p id="rfc.section.4.2.2.p.3">CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds, as per the guidance in <a href="#RFC8305" class="xref">[RFC8305]</a>.</p>
 <h1 id="rfc.section.5">
