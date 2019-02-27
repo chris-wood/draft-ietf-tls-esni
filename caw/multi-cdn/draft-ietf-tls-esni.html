@@ -287,9 +287,10 @@ ul.toc li {
 <link href="#rfc.section.3.1" rel="Chapter" title="3.1 Topologies">
 <link href="#rfc.section.3.2" rel="Chapter" title="3.2 SNI Encryption">
 <link href="#rfc.section.4" rel="Chapter" title="4 Publishing the SNI Encryption Key in the DNS">
-<link href="#rfc.section.4.1" rel="Chapter" title="4.1 Host Pointers">
-<link href="#rfc.section.4.2" rel="Chapter" title="4.2 Encrypted SNI Record">
-<link href="#rfc.section.4.3" rel="Chapter" title="4.3 Encrypted SNI DNS Resolution">
+<link href="#rfc.section.4.1" rel="Chapter" title="4.1 Encrypted SNI Record">
+<link href="#rfc.section.4.2" rel="Chapter" title="4.2 Encrypted SNI DNS Resolution">
+<link href="#rfc.section.4.2.1" rel="Chapter" title="4.2.1 Address Set Extension">
+<link href="#rfc.section.4.2.2" rel="Chapter" title="4.2.2 Resolution Algorithm">
 <link href="#rfc.section.5" rel="Chapter" title="5 The &#8220;encrypted_server_name&#8221; extension">
 <link href="#rfc.section.5.1" rel="Chapter" title="5.1 Client Behavior">
 <link href="#rfc.section.5.1.1" rel="Chapter" title="5.1.1 Sending an encrypted SNI">
@@ -420,13 +421,15 @@ ul.toc li {
 </li>
 </ul><li>4.   <a href="#rfc.section.4">Publishing the SNI Encryption Key in the DNS</a>
 </li>
-<ul><li>4.1.   <a href="#rfc.section.4.1">Host Pointers</a>
+<ul><li>4.1.   <a href="#rfc.section.4.1">Encrypted SNI Record</a>
 </li>
-<li>4.2.   <a href="#rfc.section.4.2">Encrypted SNI Record</a>
+<li>4.2.   <a href="#rfc.section.4.2">Encrypted SNI DNS Resolution</a>
 </li>
-<li>4.3.   <a href="#rfc.section.4.3">Encrypted SNI DNS Resolution</a>
+<ul><li>4.2.1.   <a href="#rfc.section.4.2.1">Address Set Extension</a>
 </li>
-</ul><li>5.   <a href="#rfc.section.5">The &#8220;encrypted_server_name&#8221; extension</a>
+<li>4.2.2.   <a href="#rfc.section.4.2.2">Resolution Algorithm</a>
+</li>
+</ul></ul><li>5.   <a href="#rfc.section.5">The &#8220;encrypted_server_name&#8221; extension</a>
 </li>
 <ul><li>5.1.   <a href="#rfc.section.5.1">Client Behavior</a>
 </li>
@@ -574,14 +577,80 @@ Client &lt;------------------------------------&gt;|                     |
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#publishing-key" id="publishing-key">Publishing the SNI Encryption Key in the DNS</a>
 </h1>
-<p id="rfc.section.4.p.1">Publishing ESNI keys in the DNS requires care to ensure correct behavior.  There are deployment environments in which a domain is served by multiple server operators who do not manage the ESNI Keys. Because ESNIKeys and A/AAAA lookup are independent, it is therefore possible to obtain an ESNIKeys record which does not match the A/AAAA records. (That is, the host to which an A or AAAA record refers is not in possession of the ESNI keys.) Naively using this record would result in handshake failure, and possibly require fallback to plaintext SNI.  The design of the system must therefore allow clients to detect and recover from this situation.</p>
+<p id="rfc.section.4.p.1">Publishing ESNI keys in the DNS requires care to ensure correct behavior.  There are deployment environments in which a domain is served by multiple server operators who do not manage the ESNI Keys. Because ESNIKeys and A/AAAA lookup are independent, it is therefore possible to obtain an ESNIKeys record which does not match the A/AAAA records. (That is, the host to which an A or AAAA record refers is not in possession of the ESNI keys.) The design of the system must therefore allow clients to detect and recover from this situation.</p>
 <p id="rfc.section.4.p.2">Servers operating in Split Mode SHOULD have DNS configured to return the same A (or AAAA) record for all ESNI-enabled servers they service. This yields an anonymity set of cardinality equal to the number of ESNI-enabled server domains supported by a given client-facing server. Thus, even with SNI encryption, an attacker which can enumerate the set of ESNI-enabled domains supported by a client-facing server can guess the correct SNI with probability at least 1/K, where K is the size of this ESNI-enabled server anonymity set. This probability may be increased via traffic analysis or other mechanisms.</p>
 <p id="rfc.section.4.p.3">The following sections describe a DNS record format that achieve these goals.</p>
 <h1 id="rfc.section.4.1">
-<a href="#rfc.section.4.1">4.1.</a> <a href="#host-pointers" id="host-pointers">Host Pointers</a>
+<a href="#rfc.section.4.1">4.1.</a> <a href="#esni-record" id="esni-record">Encrypted SNI Record</a>
 </h1>
-<p id="rfc.section.4.1.p.1">Encrypted SNI records, described in <a href="#esni-record" class="xref">Section 4.2</a>, point to the (set of) hosts which possess the private ESNI key. These pointers include (1) a canonical name which, if resolved, MUST yield A or AAAA records that possess the corresponding private key, and (2) a set of CIDR blocks, each possibly of size 1, that match the IPv4 or IPv6 address of a host with the private key.</p>
-<p id="rfc.section.4.1.p.2">These &#8220;host pointers&#8221; are encoded using the following structure.</p>
+<p id="rfc.section.4.1.p.1">SNI Encryption keys can be published using the following ESNIKeys structure.</p>
+<pre>
+    // Copied from TLS 1.3
+    struct {
+        NamedGroup group;
+        opaque key_exchange&lt;1..2^16-1&gt;;
+    } KeyShareEntry;
+
+    struct {
+        uint16 version;
+        uint8 checksum[4];
+        opaque public_name&lt;1..2^16-1&gt;;
+        KeyShareEntry keys&lt;4..2^16-1&gt;;
+        CipherSuite cipher_suites&lt;2..2^16-2&gt;;
+        uint16 padded_length;
+        uint64 not_before;
+        uint64 not_after;
+        Extension extensions&lt;0..2^16-1&gt;;
+    } ESNIKeys;
+</pre>
+<p></p>
+
+<dl>
+<dt>version</dt>
+<dd style="margin-left: 8">The version of the structure. For this specification, that value SHALL be 0xff02. Clients MUST ignore any ESNIKeys structure with a version they do not understand.  [[NOTE: This means that the RFC will presumably have a nonzero value.]]</dd>
+<dt>checksum</dt>
+<dd style="margin-left: 8">The first four (4) octets of the SHA-256 message digest <a href="#RFC6234" class="xref">[RFC6234]</a> of the ESNIKeys structure. For the purpose of computing the checksum, the value of the &#8220;checksum&#8221; field MUST be set to zero.</dd>
+<dt>public_name</dt>
+<dd style="margin-left: 8">The non-empty name of the entity trusted to update these encryption keys.  This is used to repair misconfigurations, as described in <a href="#handle-server-response" class="xref">Section 5.1.2</a>.</dd>
+<dt>keys</dt>
+<dd style="margin-left: 8">The list of keys which can be used by the client to encrypt the SNI.  Every key being listed MUST belong to a different group.</dd>
+</dl>
+<p id="rfc.section.4.1.p.3">padded_length : The length to pad the ServerNameList value to prior to encryption.  This value SHOULD be set to the largest ServerNameList the server expects to support rounded up the nearest multiple of 16. If the server supports wildcard names, it SHOULD set this value to 260.</p>
+<p></p>
+
+<dl>
+<dt>not_before</dt>
+<dd style="margin-left: 8">The moment when the keys become valid for use. The value is represented as seconds from 00:00:00 UTC on Jan 1 1970, not including leap seconds.</dd>
+<dt>not_after</dt>
+<dd style="margin-left: 8">The moment when the keys become invalid. Uses the same unit as not_before.</dd>
+<dt>extensions</dt>
+<dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future. An extension may be tagged as mandatory by using an extension type codepoint with the high order bit set to 1. A client which receives a mandatory extension they do not understand must reject the record.</dd>
+</dl>
+<p id="rfc.section.4.1.p.5">The semantics of this structure are simple: any of the listed keys may be used to encrypt the SNI for the associated domain name.  The cipher suite list is orthogonal to the list of keys, so each key may be used with any cipher suite.  Clients MUST parse the extension list and check for unsupported mandatory extensions. If an unsupported mandatory extension is present, clients MUST reject the ESNIKeys record.</p>
+<p id="rfc.section.4.1.p.6">This structure is placed in the RRData section of a TXT record as a base64-encoded string. If this encoding exceeds the 255 octet limit of TXT strings, it must be split across multiple concatenated strings as per Section 3.1.3 of <a href="#RFC4408" class="xref">[RFC4408]</a>. Servers MAY supply multiple ESNIKeys values, either of the same or of different versions.  This allows a server to support multiple versions at once.  If the server does not supply any ESNIKeys values with a version known to the client, then the client MUST behave as if no ESNIKeys were found.</p>
+<p id="rfc.section.4.1.p.7">The name of each TXT record MUST match the name composed of _esni and the query domain name. That is, if a client queries example.com, the ESNI TXT Resource Record might be:</p>
+<pre>
+_esni.example.com. 60S IN TXT "..." "..."
+</pre>
+<p id="rfc.section.4.1.p.8">The &#8220;checksum&#8221; field provides protection against transmission errors, including those caused by intermediaries such as a DNS proxy running on a home router.</p>
+<p id="rfc.section.4.1.p.9">&#8220;not_before&#8221; and &#8220;not_after&#8221; fields represent the validity period of the published ESNI keys. Clients MUST NOT use ESNI keys that was covered by an invalid checksum or beyond the published period. If none of the ESNI keys values are acceptable, the client SHOULD behave as if no ESNIKeys were found.</p>
+<p id="rfc.section.4.1.p.10">Servers SHOULD set the Resource Record TTL small enough so that the record gets discarded by the cache before the ESNI keys reach the end of their validity period. Note that servers MAY need to retain the decryption key for some time after &#8220;not_after&#8221;, and will need to consider clock skew, internal caches and the like, when selecting the &#8220;not_before&#8221; and &#8220;not_after&#8221; values.</p>
+<p id="rfc.section.4.1.p.11">Client MAY cache the ESNIKeys for a particular domain based on the TTL of the Resource Record, but SHOULD NOT cache it based on the not_after value, to allow servers to rotate the keys often and improve forward secrecy.</p>
+<p id="rfc.section.4.1.p.12">Note that the length of this structure MUST NOT exceed 2^16 - 1, as the RDLENGTH is only 16 bits <a href="#RFC1035" class="xref">[RFC1035]</a>.</p>
+<h1 id="rfc.section.4.2">
+<a href="#rfc.section.4.2">4.2.</a> <a href="#esni-resolution" id="esni-resolution">Encrypted SNI DNS Resolution</a>
+</h1>
+<p id="rfc.section.4.2.p.1">This section describes a client ESNI resolution algorithm using a new &#8220;address_set&#8221; extension described below. Future specifications may introduce new extensions and corresponding resolution algorithms.</p>
+<h1 id="rfc.section.4.2.1">
+<a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#address-set-extension" id="address-set-extension">Address Set Extension</a>
+</h1>
+<p id="rfc.section.4.2.1.p.1">ESNIKeys records MAY point to the (set of) hosts which possess the private ESNI key via the following mandatory &#8220;host_pointer&#8221; ESNIKeys extension:</p>
+<pre>
+    enum {
+        host_pointer(0x1002), (65535)
+    } ExtensionType;
+</pre>
+<p id="rfc.section.4.2.1.p.2">These pointers include (1) a canonical name which, if resolved, MUST yield A or AAAA records that possess the corresponding private key, and (2) a set of CIDR blocks, each possibly of size 1, that match the IPv4 or IPv6 address of a host with the private key.  They are encoded using the following structure.</p>
 <pre>
     enum {
         address_v4(4),
@@ -615,106 +684,47 @@ Client &lt;------------------------------------&gt;|                     |
 <dt>address_set</dt>
 <dd style="margin-left: 8">An optional list of Address entries, each containing a single IPv4 or IPv6 CIDR block, possibly of length 1.</dd>
 </dl>
-<p id="rfc.section.4.1.p.4">Use of this structure during the ESNI resolution algorithm is described in <a href="#esni-resolution" class="xref">Section 4.3</a>.</p>
-<h1 id="rfc.section.4.2">
-<a href="#rfc.section.4.2">4.2.</a> <a href="#esni-record" id="esni-record">Encrypted SNI Record</a>
+<p id="rfc.section.4.2.1.p.4">Use of this structure during the ESNI resolution algorithm is described in <a href="#esni-resolution" class="xref">Section 4.2</a>.</p>
+<h1 id="rfc.section.4.2.2">
+<a href="#rfc.section.4.2.2">4.2.2.</a> <a href="#resolution-algorithm" id="resolution-algorithm">Resolution Algorithm</a>
 </h1>
-<p id="rfc.section.4.2.p.1">SNI Encryption keys can be published using the following ESNIKeys structure.</p>
-<pre>
-    // Copied from TLS 1.3
-    struct {
-        NamedGroup group;
-        opaque key_exchange&lt;1..2^16-1&gt;;
-    } KeyShareEntry;
-
-    struct {
-        uint16 version;
-        uint8 checksum[4];
-        opaque public_name&lt;1..2^16-1&gt;;
-        KeyShareEntry keys&lt;4..2^16-1&gt;;
-        CipherSuite cipher_suites&lt;2..2^16-2&gt;;
-        uint16 padded_length;
-        uint64 not_before;
-        uint64 not_after;
-        HostPointer host_pointer;
-        Extension extensions&lt;0..2^16-1&gt;;
-    } ESNIKeys;
-</pre>
-<p></p>
-
-<dl>
-<dt>version</dt>
-<dd style="margin-left: 8">The version of the structure. For this specification, that value SHALL be 0xff02. Clients MUST ignore any ESNIKeys structure with a version they do not understand.  [[NOTE: This means that the RFC will presumably have a nonzero value.]]</dd>
-<dt>checksum</dt>
-<dd style="margin-left: 8">The first four (4) octets of the SHA-256 message digest <a href="#RFC6234" class="xref">[RFC6234]</a> of the ESNIKeys structure. For the purpose of computing the checksum, the value of the &#8220;checksum&#8221; field MUST be set to zero.</dd>
-<dt>public_name</dt>
-<dd style="margin-left: 8">The non-empty name of the entity trusted to update these encryption keys.  This is used to repair misconfigurations, as described in <a href="#handle-server-response" class="xref">Section 5.1.2</a>.</dd>
-<dt>keys</dt>
-<dd style="margin-left: 8">The list of keys which can be used by the client to encrypt the SNI.  Every key being listed MUST belong to a different group.</dd>
-</dl>
-<p id="rfc.section.4.2.p.3">padded_length : The length to pad the ServerNameList value to prior to encryption.  This value SHOULD be set to the largest ServerNameList the server expects to support rounded up the nearest multiple of 16. If the server supports wildcard names, it SHOULD set this value to 260.</p>
-<p></p>
-
-<dl>
-<dt>not_before</dt>
-<dd style="margin-left: 8">The moment when the keys become valid for use. The value is represented as seconds from 00:00:00 UTC on Jan 1 1970, not including leap seconds.</dd>
-<dt>not_after</dt>
-<dd style="margin-left: 8">The moment when the keys become invalid. Uses the same unit as not_before.</dd>
-<dt>host_pointer</dt>
-<dd style="margin-left: 8">A HostPointer structure containing address information for the hosts carrying the corresponding private ESNI key.</dd>
-<dt>extensions</dt>
-<dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future; this document does not define any extension.</dd>
-</dl>
-<p id="rfc.section.4.2.p.5">The semantics of this structure are simple: any of the listed keys may be used to encrypt the SNI for the associated domain name.  The cipher suite list is orthogonal to the list of keys, so each key may be used with any cipher suite.</p>
-<p id="rfc.section.4.2.p.6">This structure is placed in the RRData section of a TXT record as a base64-encoded string. If this encoding exceeds the 255 octet limit of TXT strings, it must be split across multiple concatenated strings as per Section 3.1.3 of <a href="#RFC4408" class="xref">[RFC4408]</a>. Servers MAY supply multiple ESNIKeys values, either of the same or of different versions.  This allows a server to support multiple versions at once.  If the server does not supply any ESNIKeys values with a version known to the client, then the client MUST behave as if no ESNIKeys were found.</p>
-<p id="rfc.section.4.2.p.7">The name of each TXT record MUST match the name composed of _esni and the query domain name. That is, if a client queries example.com, the ESNI TXT Resource Record might be:</p>
-<pre>
-_esni.example.com. 60S IN TXT "..." "..."
-</pre>
-<p id="rfc.section.4.2.p.8">The &#8220;checksum&#8221; field provides protection against transmission errors, including those caused by intermediaries such as a DNS proxy running on a home router.</p>
-<p id="rfc.section.4.2.p.9">&#8220;not_before&#8221; and &#8220;not_after&#8221; fields represent the validity period of the published ESNI keys. Clients MUST NOT use ESNI keys that was covered by an invalid checksum or beyond the published period. If none of the ESNI keys values are acceptable, the client SHOULD behave as if no ESNIKeys were found.</p>
-<p id="rfc.section.4.2.p.10">Servers SHOULD set the Resource Record TTL small enough so that the record gets discarded by the cache before the ESNI keys reach the end of their validity period. Note that servers MAY need to retain the decryption key for some time after &#8220;not_after&#8221;, and will need to consider clock skew, internal caches and the like, when selecting the &#8220;not_before&#8221; and &#8220;not_after&#8221; values.</p>
-<p id="rfc.section.4.2.p.11">Client MAY cache the ESNIKeys for a particular domain based on the TTL of the Resource Record, but SHOULD NOT cache it based on the not_after value, to allow servers to rotate the keys often and improve forward secrecy.</p>
-<p id="rfc.section.4.2.p.12">Note that the length of this structure MUST NOT exceed 2^16 - 1, as the RDLENGTH is only 16 bits <a href="#RFC1035" class="xref">[RFC1035]</a>.</p>
-<h1 id="rfc.section.4.3">
-<a href="#rfc.section.4.3">4.3.</a> <a href="#esni-resolution" id="esni-resolution">Encrypted SNI DNS Resolution</a>
-</h1>
-<p id="rfc.section.4.3.p.1">Clients obtain ESNI records by querying the DNS for ESNI-enabled server domains.  In cases where the domain of the A or AAAA records being resolved do not match the SNI Server Name, such as when <a href="#RFC7838" class="xref">[RFC7838]</a> is being used, the alternate domain should be used for querying the ESNI TXT record.</p>
-<p id="rfc.section.4.3.p.2">Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.  The following algorithm describes a procedure by which clients can process ESNIKeys responses as they arrive to produce addresses for ESNI-capable hosts.</p>
+<p id="rfc.section.4.2.2.p.1">Clients obtain ESNI records by querying the DNS for ESNI-enabled server domains.  In cases where the domain of the A or AAAA records being resolved do not match the SNI Server Name, such as when <a href="#RFC7838" class="xref">[RFC7838]</a> is being used, the alternate domain should be used for querying the ESNI TXT record.</p>
+<p id="rfc.section.4.2.2.p.2">Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries.  The following algorithm describes a procedure by which clients can process ESNIKeys responses as they arrive to produce addresses for ESNI-capable hosts.</p>
 <pre>
 1. If an ESNIKeys response arrives before an A or AAAA response, and the ESNIKeys
-response contains a full address, clients should initiate TLS with ESNI to the
-provided address(es).
+response contains a "host_pointer" extension with a full address, clients SHOULD 
+initiate TLS with ESNI to the provided address(es).
 
-2. If an A or AAAA response arrives before the ESNIKeys response, clients should
+2. If an A or AAAA response arrives before the ESNIKeys response, clients SHOULD
 wait up to CD seconds before initiating TLS to either address. (Clients may begin
-  TCP connections in this time. QUIC connections should wait.) If an ESNIKeys
-  response does not arrive in this time, clients should initiate TLS without ESNI
-  to the provided address(es).
+TCP connections in this time. QUIC connections should wait.) If an ESNIKeys
+response does not arrive in this time, clients SHOULD initiate TLS without ESNI
+to the provided address(es).
 
-3. If an ESNIKeys response arrives before this time, and if the address netmask
-matches that in the corresponding A or AAAA response, then clients should initiate
-TLS with ESNI to said address(es). (An ESNIKeys record with a full address has a
-  full netmask, and therefore the match must be exact.) Clients may delay this
-  check until both A and AAAA responses arrive, or if a Resolution Delay timeout
-  occurs, according to {{RFC8305}}.
+3. If an ESNIKeys response with a "host_pointer" extension arrives before this time, 
+and if the address netmask matches that in the corresponding A or AAAA response, 
+then clients SHOULD initiate TLS with ESNI to said address(es). (An ESNIKeys record 
+with a full address has a full netmask, and therefore the match must be exact.) 
+Clients MAY delay this check until both A and AAAA responses arrive, or if a 
+Resolution Delay timeout occurs, according to {{RFC8305}}.
 
 4. If the address netmask does not match the corresponding A or AAAA response,
-and the A or AAAA response yielded a terminal CNAME that matches ESNIKeys.host_pointer.name,
-then clients should initiate TLS using ESNI to the address(es) in the A or AAAA records.
+and the A or AAAA response yielded a terminal CNAME that matches host_pointer.name,
+then clients SHOULD initiate TLS using ESNI to the address(es) in the A or AAAA records.
 
 5. If the address netmask does not match the corresponding A or AAAA response,
-and neither the A or AAAA queries yielded a CNAME that matches ESNIKeys.host_pointer.name,
-clients should resolve the address of ESNIKeys.host_pointer.name using an
-address type that matches the A or AAAA response. Clients should initiate TLS
+and neither the A or AAAA queries yielded a CNAME that matches host_pointer.name,
+clients SHOULD resolve the address of host_pointer.name using an
+address type that matches the A or AAAA response. Clients SHOULD initiate TLS
 using ENSI to the resulting address(es) when A or AAAA resolution completes.
 
-6. If the ESNIKeys.host_pointer address set is empty, clients should resolve the
-address(es) of ESNIKeys.host_pointer.name and initiate TLS to the resulting address(es).
+6. If the "host_pointer" address set is empty, clients SHOULD resolve the
+address(es) of host_pointer.name and initiate TLS with ESNI to the resulting 
+address(es).
 
 7. In all other cases, raise an error.
 </pre>
-<p id="rfc.section.4.3.p.3">CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds, as per the guidance in <a href="#RFC8305" class="xref">[RFC8305]</a>. This algorithm (probabilistically) converges towards addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to resolve ESNIKeys host addresses may initiate TLS to the hosts specified in the A or AAAA responses without ESNI. Similarly, clients that do not wish to implement ESNI support for incomplete ESNIKeys addresses may skip all sets using them. ESNI-capable clients MUST support ESNIKeys with full addresses.</p>
+<p id="rfc.section.4.2.2.p.3">CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds, as per the guidance in <a href="#RFC8305" class="xref">[RFC8305]</a>. This algorithm (probabilistically) converges towards addresses of ESNI-capable domains. Clients who do not wish to spend a round trip to resolve ESNIKeys host addresses may initiate TLS to the hosts specified in the A or AAAA responses without ESNI. Similarly, clients that do not wish to implement ESNI support for incomplete ESNIKeys addresses may skip all sets using them. ESNI-capable clients MUST support ESNIKeys with full addresses.</p>
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#esni-extension" id="esni-extension">The &#8220;encrypted_server_name&#8221; extension</a>
 </h1>
