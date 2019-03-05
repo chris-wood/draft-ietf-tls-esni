@@ -34,7 +34,7 @@
     "labels": [
 
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -43,8 +43,8 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2019-02-15T03:51:37Z",
-    "updated_at": "2019-02-26T21:32:02Z",
-    "closed_at": null,
+    "updated_at": "2019-02-27T16:03:49Z",
+    "closed_at": "2019-02-27T16:03:49Z",
     "author_association": "OWNER",
     "pull_request": {
       "url": "https://api.github.com/repos/chris-wood/draft-ietf-tls-esni/pulls/4",
@@ -88,7 +88,7 @@
     "labels": [
 
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -97,8 +97,8 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2019-02-14T21:03:11Z",
-    "updated_at": "2019-02-19T16:25:14Z",
-    "closed_at": null,
+    "updated_at": "2019-02-27T16:03:57Z",
+    "closed_at": "2019-02-27T16:03:57Z",
     "author_association": "OWNER",
     "pull_request": {
       "url": "https://api.github.com/repos/chris-wood/draft-ietf-tls-esni/pulls/3",
