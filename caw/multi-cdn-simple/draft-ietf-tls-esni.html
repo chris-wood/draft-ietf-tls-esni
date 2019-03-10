@@ -317,7 +317,7 @@ ul.toc li {
 <link href="#rfc.section.8" rel="Chapter" title="8 IANA Considerations">
 <link href="#rfc.section.8.1" rel="Chapter" title="8.1 Update of the TLS ExtensionType Registry">
 <link href="#rfc.section.8.2" rel="Chapter" title="8.2 Update of the TLS Alert Registry">
-<link href="#rfc.section.8.3" rel="Chapter" title="8.3 Update of the DNS Underscore Global Scoped Entry Registry">
+<link href="#rfc.section.8.3" rel="Chapter" title="8.3 Update of the Resource Record (RR) TYPEs Registry">
 <link href="#rfc.references" rel="Chapter" title="9 References">
 <link href="#rfc.references.1" rel="Chapter" title="9.1 Normative References">
 <link href="#rfc.references.2" rel="Chapter" title="9.2 Informative References">
@@ -338,7 +338,7 @@ ul.toc li {
 
   <meta name="dct.creator" content="Rescorla, E., Oku, K., Sullivan, N., and C. Wood" />
   <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-tls-esni-latest" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-02-27" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-03-10" />
   <meta name="dct.abstract" content="This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3." />
   <meta name="description" content="This document defines a simple mechanism for encrypting the Server Name Indication for TLS 1.3." />
 
@@ -362,7 +362,7 @@ ul.toc li {
 <td class="right">K. Oku</td>
 </tr>
 <tr>
-<td class="left">Expires: August 31, 2019</td>
+<td class="left">Expires: September 11, 2019</td>
 <td class="right">Fastly</td>
 </tr>
 <tr>
@@ -383,7 +383,7 @@ ul.toc li {
 </tr>
 <tr>
 <td class="left"></td>
-<td class="right">February 27, 2019</td>
+<td class="right">March 10, 2019</td>
 </tr>
 
     	
@@ -399,7 +399,7 @@ ul.toc li {
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on August 31, 2019.</p>
+<p>This Internet-Draft will expire on September 11, 2019.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -481,7 +481,7 @@ ul.toc li {
 </li>
 <li>8.2.   <a href="#rfc.section.8.2">Update of the TLS Alert Registry</a>
 </li>
-<li>8.3.   <a href="#rfc.section.8.3">Update of the DNS Underscore Global Scoped Entry Registry</a>
+<li>8.3.   <a href="#rfc.section.8.3">Update of the Resource Record (RR) TYPEs Registry</a>
 </li>
 </ul><li>9.   <a href="#rfc.references">References</a>
 </li>
@@ -627,10 +627,10 @@ Client &lt;------------------------------------&gt;|                     |
 <dd style="margin-left: 8">A list of extensions that the client can take into consideration when generating a Client Hello message. The format is defined in <a href="#RFC8446" class="xref">[RFC8446]</a>; Section 4.2. The purpose of the field is to provide room for additional features in the future. An extension may be tagged as mandatory by using an extension type codepoint with the high order bit set to 1. A client which receives a mandatory extension they do not understand must reject the record.</dd>
 </dl>
 <p id="rfc.section.4.1.p.5">The semantics of this structure are simple: any of the listed keys may be used to encrypt the SNI for the associated domain name.  The cipher suite list is orthogonal to the list of keys, so each key may be used with any cipher suite.  Clients MUST parse the extension list and check for unsupported mandatory extensions. If an unsupported mandatory extension is present, clients MUST reject the ESNIKeys record.</p>
-<p id="rfc.section.4.1.p.6">This structure is placed in the RRData section of a TXT record as a base64-encoded string. If this encoding exceeds the 255 octet limit of TXT strings, it must be split across multiple concatenated strings as per Section 3.1.3 of <a href="#RFC4408" class="xref">[RFC4408]</a>. Servers MAY supply multiple ESNIKeys values, either of the same or of different versions.  This allows a server to support multiple versions at once.  If the server does not supply any ESNIKeys values with a version known to the client, then the client MUST behave as if no ESNIKeys were found.</p>
-<p id="rfc.section.4.1.p.7">The name of each TXT record MUST match the name composed of _esni and the query domain name. That is, if a client queries example.com, the ESNI TXT Resource Record might be:</p>
+<p id="rfc.section.4.1.p.6">This structure is placed in the RRData section of an ESNI record as-is.  Servers MAY supply multiple ESNIKeys values, either of the same or of different versions. This allows a server to support multiple versions at once.  If the server does not supply any ESNIKeys values with a version known to the client, then the client MUST behave as if no ESNIKeys were found.</p>
+<p id="rfc.section.4.1.p.7">The name of each ESNI record MUST match the query domain name or the query domain name&#8217;s canonicalized form. That is, if a client queries example.com, the ESNI Resource Record might be:</p>
 <pre>
-_esni.example.com. 60S IN TXT "..." "..."
+example.com. 60S IN ESNI "..." "..."
 </pre>
 <p id="rfc.section.4.1.p.8">The &#8220;checksum&#8221; field provides protection against transmission errors, including those caused by intermediaries such as a DNS proxy running on a home router.</p>
 <p id="rfc.section.4.1.p.9">&#8220;not_before&#8221; and &#8220;not_after&#8221; fields represent the validity period of the published ESNI keys. Clients MUST NOT use ESNI keys that was covered by an invalid checksum or beyond the published period. If none of the ESNI keys values are acceptable, the client SHOULD behave as if no ESNIKeys were found.</p>
@@ -766,7 +766,7 @@ arrives in this time, clients SHOULD initiate TLS without ESNI to the available 
 <h1 id="rfc.section.5.1.1">
 <a href="#rfc.section.5.1.1">5.1.1.</a> <a href="#send-esni" id="send-esni">Sending an encrypted SNI</a>
 </h1>
-<p id="rfc.section.5.1.1.p.1">In order to send an encrypted SNI, the client MUST first select one of the server ESNIKeyShareEntry values and generate an (EC)DHE share in the matching group. This share will then be sent to the server in the &#8220;encrypted_sni&#8221; extension and used to derive the SNI encryption key. It does not affect the (EC)DHE shared secret used in the TLS key schedule. It MUST also select an appropriate cipher suite from the list of suites offered by the server. If the client is unable to select an appropriate group or suite it SHOULD ignore that ESNIKeys value and MAY attempt to use another value provided by the server (recall that servers might provide multiple ESNIKeys in response to a ESNI TXT query). The client MUST NOT send encrypted SNI using groups or cipher suites not advertised by the server.</p>
+<p id="rfc.section.5.1.1.p.1">In order to send an encrypted SNI, the client MUST first select one of the server ESNIKeyShareEntry values and generate an (EC)DHE share in the matching group. This share will then be sent to the server in the &#8220;encrypted_sni&#8221; extension and used to derive the SNI encryption key. It does not affect the (EC)DHE shared secret used in the TLS key schedule. It MUST also select an appropriate cipher suite from the list of suites offered by the server. If the client is unable to select an appropriate group or suite it SHOULD ignore that ESNIKeys value and MAY attempt to use another value provided by the server. (Recall that servers might provide multiple ESNIKeys in response to a ESNI record query.) The client MUST NOT send encrypted SNI using groups or cipher suites not advertised by the server.</p>
 <p id="rfc.section.5.1.1.p.2">When offering an encrypted SNI, the client MUST NOT offer to resume any non-ESNI PSKs. It additionally MUST NOT offer to resume any sessions for TLS 1.2 or below.</p>
 <p id="rfc.section.5.1.1.p.3">Let Z be the DH shared secret derived from a key share in ESNIKeys and the corresponding client share in ClientEncryptedSNI.key_share. The SNI encryption key is computed from Z as follows:</p>
 <pre>
@@ -829,6 +829,7 @@ arrives in this time, clients SHOULD initiate TLS without ESNI to the available 
 <p id="rfc.section.5.1.2.p.4">Otherwise, when the handshake completes successfully with the public name verified, the client MUST abort the connection with an &#8220;esni_required&#8221; alert.  The client can then regard ESNI as securely disabled by the server. It SHOULD retry the handshake with a new transport connection and ESNI disabled.</p>
 <p id="rfc.section.5.1.2.p.5">[[TODO: Key replacement is significantly less scary than saying that ESNI-naive servers bounce ESNI off. Is it worth defining a strict mode toggle in the ESNI keys, for a deployment to indicate it is ready for that? ]]</p>
 <p id="rfc.section.5.1.2.p.6">Clients SHOULD implement a limit on retries caused by &#8220;esni_retry_request&#8221; or servers which do not acknowledge the &#8220;encrypted_server_name&#8221; extension. If the client does not retry in either scenario, it MUST report an error to the calling application.</p>
+<p id="rfc.section.5.1.2.p.7">If the server sends a HelloRetryRequest in response to the ClientHello and the client can send a second updated ClientHello per the rules in <a href="#RFC8446" class="xref">[RFC8446]</a>, the &#8220;encrypted_server_name&#8221; extension values which do not depend on the (possibly updated) ClientHello.KeyShareClientHello, i.e,, ClientEncryptedSNI.suite, ClientEncryptedSNI.key_share, and ClientEncryptedSNI.record_digest, MUST NOT change across ClientHello messages.  Moreover, ClientESNIInner.nonce and ClientESNIInner.realSNI MUST not change across ClientHello messages. Informally, the values of all unencrypted extension information, as well as the inner extension plaintext, must be consistent between the first and second ClientHello messages.</p>
 <h1 id="rfc.section.5.1.3">
 <a href="#rfc.section.5.1.3">5.1.3.</a> <a href="#verify-public-name" id="verify-public-name">Verifying against the public name</a>
 </h1>
@@ -952,19 +953,14 @@ arrives in this time, clients SHOULD initiate TLS without ESNI to the available 
 </h1>
 <p id="rfc.section.8.2.p.1">IANA is requested to create an entry, esni_required(121) in the existing registry for Alerts (defined in <a href="#RFC8446" class="xref">[RFC8446]</a>), with the &#8220;DTLS-OK&#8221; column being set to &#8220;Y&#8221;.</p>
 <h1 id="rfc.section.8.3">
-<a href="#rfc.section.8.3">8.3.</a> <a href="#update-of-the-dns-underscore-global-scoped-entry-registry" id="update-of-the-dns-underscore-global-scoped-entry-registry">Update of the DNS Underscore Global Scoped Entry Registry</a>
+<a href="#rfc.section.8.3">8.3.</a> <a href="#update-of-the-resource-record-rr-types-registry" id="update-of-the-resource-record-rr-types-registry">Update of the Resource Record (RR) TYPEs Registry</a>
 </h1>
-<p id="rfc.section.8.3.p.1">IANA is requested to create an entry in the DNS Underscore Global Scoped Entry Registry (defined in <a href="#I-D.ietf-dnsop-attrleaf" class="xref">[I-D.ietf-dnsop-attrleaf]</a>) with the &#8220;RR Type&#8221; column value being set to &#8220;TXT&#8221;, the &#8220;_NODE NAME&#8221; column value being set to &#8220;_esni&#8221;, and the &#8220;Reference&#8221; column value being set to this document.</p>
+<p id="rfc.section.8.3.p.1">IANA is requested to create an entry, ESNI(0xff9f), in the existing registry for Resource Record (RR) TYPEs (defined in <a href="#RFC6895" class="xref">[RFC6895]</a>) with &#8220;Meaning&#8221; column value being set to &#8220;Encrypted SNI&#8221;.</p>
 <h1 id="rfc.references">
 <a href="#rfc.references">9.</a> References</h1>
 <h1 id="rfc.references.1">
 <a href="#rfc.references.1">9.1.</a> Normative References</h1>
 <table><tbody>
-<tr>
-<td class="reference"><b id="I-D.ietf-dnsop-attrleaf">[I-D.ietf-dnsop-attrleaf]</b></td>
-<td class="top">
-<a>Crocker, D.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnsop-attrleaf-16">DNS Scoped Data Through "Underscore" Naming of Attribute Leaves</a>", Internet-Draft draft-ietf-dnsop-attrleaf-16, November 2018.</td>
-</tr>
 <tr>
 <td class="reference"><b id="I-D.ietf-tls-exported-authenticator">[I-D.ietf-tls-exported-authenticator]</b></td>
 <td class="top">
@@ -981,11 +977,6 @@ arrives in this time, clients SHOULD initiate TLS without ESNI to the available 
 <a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
 </tr>
 <tr>
-<td class="reference"><b id="RFC4408">[RFC4408]</b></td>
-<td class="top">
-<a>Wong, M.</a> and <a>W. Schlitt</a>, "<a href="https://tools.ietf.org/html/rfc4408">Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1</a>", RFC 4408, DOI 10.17487/RFC4408, April 2006.</td>
-</tr>
-<tr>
 <td class="reference"><b id="RFC6066">[RFC6066]</b></td>
 <td class="top">
 <a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>", RFC 6066, DOI 10.17487/RFC6066, January 2011.</td>
@@ -994,6 +985,11 @@ arrives in this time, clients SHOULD initiate TLS without ESNI to the available 
 <td class="reference"><b id="RFC6234">[RFC6234]</b></td>
 <td class="top">
 <a>Eastlake 3rd, D.</a> and <a>T. Hansen</a>, "<a href="https://tools.ietf.org/html/rfc6234">US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</a>", RFC 6234, DOI 10.17487/RFC6234, May 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6895">[RFC6895]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6895">Domain Name System (DNS) IANA Considerations</a>", BCP 42, RFC 6895, DOI 10.17487/RFC6895, April 2013.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7540">[RFC7540]</b></td>
