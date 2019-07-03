@@ -210,7 +210,6 @@ SNI Encryption keys can be published using the following ESNIRecord structure.
 
     struct {
         uint16 version;
-        uint8 checksum[4];
         opaque public_name<1..2^16-1>;
         KeyShareEntry keys<4..2^16-1>;
         CipherSuite cipher_suites<2..2^16-2>;
@@ -246,11 +245,6 @@ version
 SHALL be 0xff02. Clients MUST ignore any ESNIKeys structure with a
 version they do not understand.
 [[NOTE: This means that the RFC will presumably have a nonzero value.]]
-
-checksum
-: The first four (4) octets of the SHA-256 message digest {{RFC6234}}
-of the ESNIKeys structure. For the purpose of computing the checksum, the
-value of the "checksum" field MUST be set to zero.
 
 public_name
 : The non-empty name of the entity trusted to update these encryption keys.
@@ -301,9 +295,9 @@ example.com, the ESNI Resource Record might be:
 example.com. 60S IN ESNI "..." "..."
 ~~~
 
-The "checksum" field provides protection against transmission errors,
-including those caused by intermediaries such as a DNS proxy running on a
-home router.
+In the event that ESNIKeys is corrupt in transit or via any other means,
+servers will use the mechanism described in {{server-behavior}} to deliver
+fresh ESNIKeys to clients.
 
 Note that the length of the ESNIRecord structure MUST NOT exceed 2^16 - 1, as the
 RDLENGTH is only 16 bits {{RFC1035}}.
