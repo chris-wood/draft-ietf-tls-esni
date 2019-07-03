@@ -45,7 +45,7 @@ normative:
   RFC7918:
 
 informative:
-
+  I-D.ietf-tls-grease:
 
 
 --- abstract
@@ -172,10 +172,34 @@ provider's public key. The provider can then decrypt the extension
 and either terminate the connection (in Shared Mode) or forward
 it to the backend server (in Split Mode).
 
-# Publishing the SNI Encryption Key {#publishing-key}
+# Publishing the SNI Encryption Key in the DNS {#publishing-key}
 
-SNI Encryption keys can be published in the DNS using the ESNIKeys
-structure, defined below.
+Publishing ESNI keys in the DNS requires care to ensure correct behavior.
+There are deployment environments in which a domain is served by multiple server
+operators who do not manage the ESNI keys. Because ESNI and A/AAAA lookups
+are independent, it is therefore possible to obtain an ESNI record which does
+not match the A/AAAA records. (That is, the host to which an A or AAAA record
+refers is not in possession of the ESNI keys.) The design of the system must
+therefore allow clients to detect and recover from this situation (see
+{{esni-resolution}} for more details).
+
+Content providers operating in Split Mode SHOULD ensure that the A and AAAA
+records for ESNI-enabled server names do not allow identifying the server name
+from the IP address. This can for example be achieved by always returning the
+same records for all ESNI-enabled names, or by having the function that picks
+addresses from a pool not depend on the server name. This yields
+an anonymity set of cardinality equal to the number of ESNI-enabled server domains
+supported by a given client-facing server. Thus, even with SNI encryption,
+an attacker which can enumerate the set of ESNI-enabled domains supported
+by a client-facing server can guess the correct SNI with probability at least
+1/K, where K is the size of this ESNI-enabled server anonymity set. This probability
+may be increased via traffic analysis or other mechanisms.
+
+The following sections describe a DNS record format that achieve these goals.
+
+## Encrypted SNI Record {#esni-record}
+
+SNI Encryption keys can be published using the following ESNIRecord structure.
 
 ~~~~
     // Copied from TLS 1.3
@@ -191,11 +215,31 @@ structure, defined below.
         KeyShareEntry keys<4..2^16-1>;
         CipherSuite cipher_suites<2..2^16-2>;
         uint16 padded_length;
-        uint64 not_before;
-        uint64 not_after;
         Extension extensions<0..2^16-1>;
     } ESNIKeys;
+
+    struct {
+        ESNIKeys esni_keys;
+        Extension dns_extensions<0..2^16-1>;
+    } ESNIRecord;
 ~~~~
+
+The outermost ESNIRecord structure contains the following fields:
+
+esni_keys
+: An ESNIKeys structure that contains the actual keys used to encrypt the SNI
+as well as some metadata related to those keys.
+
+dns_extensions
+: A list of extensions that the client can take into consideration when
+resolving the target DNS name. The format is defined in
+{{RFC8446}}; Section 4.2. The purpose of the field is to
+provide room for additional features in the future. An extension
+may be tagged as mandatory by using an extension type codepoint with
+the high order bit set to 1. A client which receives a mandatory extension
+they do not understand must reject the ESNIRecord values.
+
+The ESNIKeys structure contains the following fields:
 
 version
 : The version of the structure. For this specification, that value
@@ -218,90 +262,130 @@ keys
 Every key being listed MUST belong to a different group.
 
 padded_length
-:
 The length to pad the ServerNameList value to prior to encryption.
 This value SHOULD be set to the largest ServerNameList the server
 expects to support rounded up the nearest multiple of 16. If the
-server supports wildcard names, it SHOULD set this value to 260.
-
-not_before
-: The moment when the keys become valid for use. The value is represented
-as seconds from 00:00:00 UTC on Jan 1 1970, not including leap seconds.
-
-not_after
-: The moment when the keys become invalid. Uses the same unit as
-not_before.
+server supports arbitrary wildcard names, it SHOULD set this value to
+260. Clients SHOULD reject ESNIKeys as invalid if padded_length is
+greater than 260.
 
 extensions
 : A list of extensions that the client can take into consideration when
 generating a Client Hello message. The format is defined in
 {{RFC8446}}; Section 4.2. The purpose of the field is to
-provide room for additional features in the future; this document does
-not define any extension.
+provide room for additional features in the future. An extension
+may be tagged as mandatory by using an extension type codepoint with
+the high order bit set to 1. A client which receives a mandatory extension
+they do not understand must reject the ESNIRecord value.
 
-The semantics of this structure are simple: any of the listed keys may
+Any of the listed keys in the ESNIKeys value may
 be used to encrypt the SNI for the associated domain name.
 The cipher suite list is orthogonal to the
 list of keys, so each key may be used with any cipher suite.
+Clients MUST parse the extension list and check for unsupported
+mandatory extensions. If an unsupported mandatory extension is
+present, clients MUST reject the ESNIRecord value.
 
-This structure is placed in the RRData section of an ESNI record as-is.
-Servers MAY supply multiple ESNIKeys values, either of the same or of different 
+The ESNIRecord structure is placed in the RRData section of an ESNI record as-is.
+Servers MAY supply multiple ESNIRecord values, with ESNIKeys either of the same or of different
 versions. This allows a server to support multiple versions at once.
-If the server does not supply any ESNIKeys values with a version
+If the server does not supply any ESNIRecord values with an ESNIKeys version
 known to the client, then the client MUST behave as if no
-ESNIKeys were found.
+ESNI records were found.
 
 The name of each ESNI record MUST match the query domain name or the
-query domain name's canonicalized form. That is, if a client queries 
+query domain name's canonicalized form. That is, if a client queries
 example.com, the ESNI Resource Record might be:
 
 ~~~
 example.com. 60S IN ESNI "..." "..."
 ~~~
 
-Servers MUST ensure that if multiple A or AAAA records are returned for a
-domain with ESNI support, all the servers pointed to by those records are
-able to handle the keys returned as part of an ESNI record for that domain.
-
-Clients obtain these records by querying DNS for ESNI-enabled server domains.
-Clients may initiate these queries in parallel alongside normal A or AAAA queries,
-and SHOULD block TLS handshakes until they complete, perhaps by timing out.
-
-In cases where the domain of the A or AAAA records being resolved do
-not match the SNI Server Name, such as when {{!RFC7838}} is being used, the SNI
-domain should be used for querying the ESNI record.
-
-Servers operating in Split Mode SHOULD have DNS configured to return
-the same A (or AAAA) record for all ESNI-enabled servers they service. This yields
-an anonymity set of cardinality equal to the number of ESNI-enabled server domains
-supported by a given client-facing server. Thus, even with SNI encryption,
-an attacker which can enumerate the set of ESNI-enabled domains supported
-by a client-facing server can guess the correct SNI with probability at least
-1/K, where K is the size of this ESNI-enabled server anonymity set. This probability
-may be increased via traffic analysis or other mechanisms.
-
 The "checksum" field provides protection against transmission errors,
 including those caused by intermediaries such as a DNS proxy running on a
 home router.
 
-"not_before" and "not_after" fields represent the validity period of the
-published ESNI keys. Clients MUST NOT use ESNI keys that was covered by an
-invalid checksum or beyond the published period. If none of the ESNI keys
-values are acceptable, the client SHOULD behave as if no ESNIKeys
-were found.
-
-Servers SHOULD set the Resource Record TTL small enough so that the
-record gets discarded by the cache before the ESNI keys reach the end of
-their validity period. Note that servers MAY need to retain the decryption key
-for some time after "not_after", and will need to consider clock skew, internal
-caches and the like, when selecting the "not_before" and "not_after" values.
-
-Client MAY cache the ESNIKeys for a particular domain based on the TTL of the
-Resource Record, but SHOULD NOT cache it based on the not_after value, to allow
-servers to rotate the keys often and improve forward secrecy.
-
-Note that the length of this structure MUST NOT exceed 2^16 - 1, as the
+Note that the length of the ESNIRecord structure MUST NOT exceed 2^16 - 1, as the
 RDLENGTH is only 16 bits {{RFC1035}}.
+
+## Encrypted SNI DNS Resolution {#esni-resolution}
+
+This section describes a client ESNI resolution algorithm using an "address_set"
+extension for the ESNIRecord structure. Future specifications may introduce new
+ESNIRecord extensions and corresponding resolution algorithms.
+
+### Address Set Extension
+
+ESNIRecord values MAY indicate one or more IP addresses for the host(s) in possession
+of the private key corresponding to one of the keys provided in the ESNIKeys
+structure, via the following mandatory "address_set" extension:
+
+~~~
+    enum {
+        address_set(0x1001), (65535)
+    } ExtensionType;
+~~~
+
+The body of this extension is encoded using the following structure.
+
+~~~~
+    enum {
+        address_v4(4),
+        address_v6(6),
+    } AddressType;
+
+    struct {
+        AddressType address_type;
+        select (address_type) {
+            case address_v4: {
+                opaque ipv4Address[4];
+            }
+            case address_v6: {
+                opaque ipv6Address[16];
+            }
+        }
+    } Address;
+
+    struct {
+        Address address_set<1..2^16-1>;
+    } AddressSet;
+~~~~
+
+address_set
+: A set of Address structures containing IPv4 or IPv6 addresses
+to hosts which have the corresponding private ESNI key.
+
+This extension MUST NOT be placed in the ESNIKeys extensions field, but only
+in the ESNIRecord dns_extensions field.
+
+### Resolution Algorithm
+
+Clients obtain ESNI records by querying the DNS for ESNI-enabled server domains.
+In cases where the domain of the A or AAAA records being resolved do not match the
+SNI Server Name, such as when {{!RFC7838}} is being used, the alternate domain should
+be used for querying the ESNI record. (See Section 2.3 of {{!RFC7838}} for more details.)
+
+Clients SHOULD initiate ESNI queries in parallel alongside normal A or AAAA queries to
+obtain address information in a timely manner in the event that ESNI is available.
+The following algorithm describes a procedure by which clients can process
+ESNI responses as they arrive to produce addresses for ESNI-capable hosts.
+
+~~~
+1. If an ESNI response containing an ESNIRecord value with an "address_set" extension arrives before an A or
+AAAA response, clients SHOULD initiate TLS with ESNI to the provided address(es).
+
+2. If an A or AAAA response arrives before the ESNI response, clients SHOULD wait up
+to CD milliseconds before initiating TLS to either address. (Clients may begin
+TCP connections in this time. QUIC connections should wait.) If an ESNI
+response with an "address_set" extension arrives in this time, clients SHOULD
+initiate TLS with ESNI to the provided address(es). If an ESNI response
+without an "address_set" extension arrives in this time, clients MAY initiate
+TLS with ESNI to the address(es) in the A or AAAA response. If no ESNI response
+arrives in this time, clients SHOULD initiate TLS without ESNI to the available address(es).
+~~~
+
+CD (Connection Delay) is a configurable parameter. The recommended value is 50 milliseconds,
+as per the guidance in {{!RFC8305}}.
 
 # The "encrypted_server_name" extension {#esni-extension}
 
@@ -403,8 +487,8 @@ matching group. This share will then be sent to the server in the
 an appropriate cipher suite from the list of suites offered by the
 server. If the client is unable to select an appropriate group or suite it
 SHOULD ignore that ESNIKeys value and MAY attempt to use another value provided
-by the server. (Recall that servers might provide multiple ESNIKeys in response
-to a ESNI record query.) The client MUST NOT send encrypted SNI using groups or
+by the server. (Recall that servers might provide multiple ESNIRecord values in response
+to a ESNI record query, each containing an ESNIKeys value.) The client MUST NOT send encrypted SNI using groups or
 cipher suites not advertised by the server.
 
 When offering an encrypted SNI, the client MUST NOT offer to resume any non-ESNI
@@ -422,7 +506,8 @@ computed from Z as follows:
 ~~~~
 
 where ESNIContents is as specified below and Hash is the hash function
-associated with the HKDF instantiation.
+associated with the HKDF instantiation. The salt argument for HKDF-Extract is a
+string consisting of Hash.length bytes set to zeros.
 
 ~~~
    struct {
@@ -469,14 +554,13 @@ The ClientEncryptedSNI.encrypted_sni value is then computed using the usual
 TLS 1.3 AEAD:
 
 ~~~~
-    encrypted_sni = AEAD-Encrypt(key, iv, ClientHello.KeyShareClientHello, ClientESNIInner)
+    encrypted_sni = AEAD-Encrypt(key, iv, KeyShareClientHello, ClientESNIInner)
 ~~~~
 
-Where ClientHello.KeyShareClientHello is the body of the extension but
-not including the extension header. Including
-ClientHello.KeyShareClientHello in the AAD of AEAD-Encrypt binds the
-ClientEncryptedSNI value to the ClientHello and prevents cut-and-paste
-attacks.
+Where KeyShareClientHello is the "extension_data" field of the "key_share"
+extension in a Client Hello (Section 4.2.8 of {{!RFC8446}})). Including
+KeyShareClientHello in the AAD of AEAD-Encrypt binds the ClientEncryptedSNI
+value to the ClientHello and prevents cut-and-paste attacks.
 
 Note: future extensions may end up reusing the server's ESNIKeyShareEntry
 for other purposes within the same message (e.g., encrypting other
@@ -492,7 +576,7 @@ This value is placed in an "encrypted_server_name" extension.
 
 The client MUST place the value of ESNIKeys.public_name in the "server_name"
 extension. (This is required for technical conformance with {{!RFC7540}};
-Section 9.2.) The client MUST NOT send a "cached_info" extension {{!RFC7924}} 
+Section 9.2.) The client MUST NOT send a "cached_info" extension {{!RFC7924}}
 with a CachedObject entry whose CachedInformationType is "cert".
 
 ### Handling the server response {#handle-server-response}
@@ -504,18 +588,18 @@ then processes the extension's "response_type" field:
 - If the value is "esni_accept", the client MUST check that the extension's
   "nonce" field matches ClientESNIInner.nonce and otherwise abort the
   connection with an "illegal_parameter" alert. The client then proceeds
-  with the connection as usual, verifying the certificate against the desired
-  name.
+  with the connection as usual, authenticating the connection for the origin
+  server.
 
 - If the value is "esni_retry_request", the client proceeds with the handshake,
-  verifying the certificate against ESNIKeys.public_name as described in
-  {{verify-public-name}}. If verification or the handshake fails, the client
+  authenticating for ESNIKeys.public_name as described in
+  {{auth-public-name}}. If authentication or the handshake fails, the client
   MUST return a failure to the calling application. It MUST NOT use the retry
   keys.
 
   Otherwise, when the handshake completes successfully with the public name
-  verified, the client MUST abort the connection with an "esni_required" alert.
-  It then processes the "retry_keys" field from the server's
+  authenticated, the client MUST abort the connection with an "esni_required"
+  alert. It then processes the "retry_keys" field from the server's
   "encrypted_server_name" extension.
 
   If one of the values contains a version supported by the client, it can regard
@@ -537,16 +621,17 @@ then processes the extension's "response_type" field:
 
 If the server negotiates an earlier version of TLS, or if it does not
 provide an "encrypted_server_name" extension in EncryptedExtensions, the
-client proceeds with the handshake, verifying the certificate against
-ESNIKeys.public_name as described in {{verify-public-name}}. The client MUST
-NOT enable the False Start optimization {{RFC7918}} for this handshake. If
-verification or the handshake fails, the client MUST return a failure to the
-calling application. It MUST NOT treat this as a secure signal to disable ESNI.
+client proceeds with the handshake, authenticating for
+ESNIKeys.public_name as described in {{auth-public-name}}. If an earlier
+version was negotiated, the client MUST NOT enable the False Start optimization
+{{RFC7918}} for this handshake. If authentication or the handshake fails, the
+client MUST return a failure to the calling application. It MUST NOT treat this
+as a secure signal to disable ESNI.
 
 Otherwise, when the handshake completes successfully with the public name
-verified, the client MUST abort the connection with an "esni_required" alert.
-The client can then regard ESNI as securely disabled by the server. It SHOULD
-retry the handshake with a new transport connection and ESNI disabled.
+authenticated, the client MUST abort the connection with an "esni_required"
+alert. The client can then regard ESNI as securely disabled by the server. It
+SHOULD retry the handshake with a new transport connection and ESNI disabled.
 
 [[TODO: Key replacement is significantly less scary than saying that ESNI-naive
   servers bounce ESNI off. Is it worth defining a strict mode toggle in the ESNI
@@ -560,7 +645,7 @@ calling application.
 If the server sends a HelloRetryRequest in response to the ClientHello
 and the client can send a second updated ClientHello per the rules in
 {{RFC8446}}, the "encrypted_server_name" extension values which do not depend
-on the (possibly updated) ClientHello.KeyShareClientHello, i.e,,
+on the (possibly updated) KeyShareClientHello, i.e,,
 ClientEncryptedSNI.suite, ClientEncryptedSNI.key_share, and
 ClientEncryptedSNI.record_digest, MUST NOT change across ClientHello messages.
 Moreover, ClientESNIInner.nonce and ClientESNIInner.realSNI MUST not change
@@ -568,12 +653,12 @@ across ClientHello messages. Informally, the values of all unencrypted extension
 information, as well as the inner extension plaintext, must be consistent between
 the first and second ClientHello messages.
 
-### Verifying against the public name {#verify-public-name}
+### Authenticating for the public name {#auth-public-name}
 
 When the server cannot decrypt or does not process the "encrypted_server_name"
 extension, it continues with the handshake using the cleartext "server_name"
 extension instead (see {{server-behavior}}). Clients that offer ESNI then
-verify the certificate with the public name, as follows:
+authenticate the connection with the public name, as follows:
 
 - If the server resumed a session or negotiated a session that did not use a
   certificate for authentication, the client MUST abort the connection with an
@@ -588,12 +673,47 @@ verify the certificate with the public name, as follows:
 - If the server requests a client certificate, the client MUST respond with an
   empty Certificate message, denoting no client certificate.
 
-Note that verifying a connection for the public name does not verify it for the
-origin. The TLS implementation MUST NOT report such connections as successful to
-the application. It additionally MUST ignore all session tickets and session IDs
-presented by the server. These connections are only used to trigger retries, as
-described in {{handle-server-response}}. This may be implemented, for instance, by
-reporting a failed connection with a dedicated error code.
+Note that authenticating a connection for the public name does not authenticate
+it for the origin. The TLS implementation MUST NOT report such connections as
+successful to the application. It additionally MUST ignore all session tickets
+and session IDs presented by the server. These connections are only used to
+trigger retries, as described in {{handle-server-response}}. This may be
+implemented, for instance, by reporting a failed connection with a dedicated
+error code.
+
+### GREASE extensions {#grease-extensions}
+
+If the client attempts to connect to a server and does not have an ESNIKeys
+structure available for the server, it SHOULD send a GREASE
+{{I-D.ietf-tls-grease}} "encrypted_server_name" extension as follows:
+
+- Select a supported cipher suite, named group, and padded_length
+  value. The padded_length value SHOULD be 260 or a multiple of 16 less than
+  260. Set the "suite" field  to the selected cipher suite. These selections
+  SHOULD vary to exercise all supported configurations, but MAY be held constant
+  for successive connections to the same server in the same session.
+
+- Set the "key_share" field to a randomly-generated valid public key
+  for the named group.
+
+- Set the "record_digest" field to a randomly-generated string of hash_length
+  bytes, where hash_length is the length of the hash function associated with
+  the chosen cipher suite.
+
+- Set the "encrypted_sni" field to a randomly-generated string of
+  16 + padded_length + tag_length bytes, where tag_length is the tag length
+  of the chosen cipher suite's associated AEAD.
+
+If the server sends an "encrypted_server_name" extension, the client
+MUST check the extension syntactically and abort the connection with a
+"decode_error" alert if it is invalid. If the "response_type" field
+contains "esni_retry_requested", the client MUST ignore the extension
+and proceed with the handshake. If it contains "esni_accept" or any other
+value, the client MUST abort the connection with an "illegal_parameter" alert.
+
+Offering a GREASE extension is not considered offering an encrypted SNI for
+purposes of requirements in {{client-behavior}}. In particular, the client MAY
+offer to resume sessions established without ESNI.
 
 ## Client-Facing Server Behavior {#server-behavior}
 
@@ -617,7 +737,15 @@ behavior:
   to ESNI PSKs. ESNI PSKs offered by the client are associated with the ESNI
   name. The server was unable to decrypt then ESNI name, so it should not resume
   them when using the cleartext SNI name. This restriction allows a client to
-  reject resumptions in {{verify-public-name}}.
+  reject resumptions in {{auth-public-name}}.
+
+Note that an unrecognized ClientEncryptedSNI.record_digest value may be
+a GREASE ESNI extension (see {{grease-extensions}}), so it is necessary
+for servers to proceed with the connection and rely on the client to abort if
+ESNI was required. In particular, the unrecognized value alone does not
+indicate a misconfigured ESNI advertisement ({{misconfiguration}}). Instead,
+servers can measure occurrences of the "esni_required" alert to detect this
+case.
 
 If the ClientEncryptedSNI.record_digest value does match the cryptographic
 hash of a known ESNIKeys, the server performs the following checks:
@@ -655,18 +783,16 @@ messages, but just blindly forwards them.
 A server operating in Shared Mode uses PaddedServerNameList.sni as
 if it were the "server_name" extension to finish the handshake. It
 SHOULD pad the Certificate message, via padding at the record layer,
-such that its length equals the size of the largest possible Certificate
-(message) covered by the same ESNI key. Moreover, the server MUST
-include the "encrypted_server_name" extension in EncryptedExtensions
-with the "response_type" field set to "esni_accept" and the "nonce"
-field set to the decrypted PaddedServerNameList.nonce value from the client
-"encrypted_server_name" extension.
+such that its length equals the size of the the largest possible Certificate
+(message) covered by the same ESNI key.
+
+Moreover, the server MUST include the "encrypted_server_name" extension in EncryptedExtensions
+with the "response_type" field set to "esni_accept" and the "nonce" field set
+to the decrypted PaddedServerNameList.nonce value from the client "encrypted_server_name" extension.
 
 If the server sends a NewSessionTicket message, the corresponding ESNI PSK MUST
 be ignored by all other servers in the deployment when not negotiating ESNI,
-including servers which do not implement this specification. This may be
-implemented by adding a new field to the server session state which earlier
-implementations cannot parse.
+including servers which do not implement this specification.
 
 This restriction provides robustness for rollbacks (see {{misconfiguration}}).
 
@@ -707,7 +833,8 @@ incomplete rollout in a multi-server deployment. This may also occur if a server
 loses its ESNI keys, or if a deployment of ESNI must be rolled back on the
 server.
 
-The retry mechanism repairs most such inconsistencies. If server and advertised keys mismatch,
+The retry mechanism repairs inconsistencies, provided the server is
+authoritative for the public name. If server and advertised keys mismatch,
 the server will respond with esni_retry_requested. If the server does not understand the
 "encrypted_server_name" extension at all, it will ignore it as required by {{RFC8446}};
 Section 4.1.2. Provided the server can present a certificate valid for the public name,
@@ -742,24 +869,23 @@ connection in this case.
 ## Why is cleartext DNS OK? {#cleartext-dns}
 
 In comparison to {{?I-D.kazuho-protected-sni}}, wherein DNS Resource
-Records are signed via a server private key, ESNIKeys have no
+Records are signed via a server private key, ESNI records have no
 authenticity or provenance information. This means that any attacker
 which can inject DNS responses or poison DNS caches, which is a common
 scenario in client access networks, can supply clients with fake
-ESNIKeys (so that the client encrypts SNI to them) or strip the
-ESNIKeys from the response. However, in the face of an attacker that
+ESNI records (so that the client encrypts SNI to them) or strip the
+ESNI record from the response. However, in the face of an attacker that
 controls DNS, no SNI encryption scheme can work because the attacker
 can replace the IP address, thus blocking client connections, or
 substituting a unique IP address which is 1:1 with the DNS name that
-was looked up (modulo DNS wildcards). Thus, allowing the ESNIKeys in
+was looked up (modulo DNS wildcards). Thus, allowing the ESNI records in
 the clear does not make the situation significantly worse.
 
-Clearly, DNSSEC (if the client validates and hard fails) is a defense against
-this form of attack, but DoH/DPRIVE are also defenses against DNS attacks
-by attackers on the local network, which is a common case where SNI is
-desired.
+Clearly, DNSSEC is a defense against this form of attack if the client validates
+and hard fails, but DoH/DPRIVE are also defenses against DNS attacks by
+attackers on the local network, which is a common case where SNI is desired.
 Moreover, as noted in the introduction, SNI encryption is less useful
-without encryption of DNS queries in transit via DoH or DPRIVE mechanisms.
+without encryption of DNS queries in transit.
 
 ## Comparison Against Criteria
 
@@ -783,7 +909,7 @@ Server operators may partition their private keys however they see fit provided
 each server behind an IP address has the corresponding private key to decrypt
 a key. Thus, when one ESNI key is provided, sharing is optimally bound by the number
 of hosts that share an IP address. Server operators may further limit sharing
-by sending different Resource Records containing ESNIKeys with different keys
+by sending different Resource Records containing ESNIRecord and ESNIKeys values with different keys
 using a short TTL.
 
 ### Prevent SNI-based DoS attacks
@@ -802,6 +928,10 @@ client behavior. In other words, if all Web browsers start using ESNI,
 the presence of this value does not signal suspicious behavior to passive
 eavesdroppers.
 
+Additionally, this specification allows for clients to send GREASE ESNI
+extensions (see {{grease-extensions}}), which helps ensure the ecosystem
+handles the values correctly.
+
 ### Forward secrecy
 
 This design is not forward secret because the server's ESNI key is static.
@@ -815,7 +945,7 @@ directly to backend origin servers, thereby avoiding unnecessary MiTM attacks.
 
 ### Split server spoofing
 
-Assuming ESNIKeys retrieved from DNS are validated, e.g., via DNSSEC or fetched
+Assuming ESNI records retrieved from DNS are validated, e.g., via DNSSEC or fetched
 from a trusted Recursive Resolver, spoofing a server operating in Split Mode
 is not possible. See {{cleartext-dns}} for more details regarding cleartext
 DNS.
@@ -861,7 +991,7 @@ existing registry for Alerts (defined in {{!RFC8446}}), with the
 "DTLS-OK" column being set to "Y".
 
 ## Update of the Resource Record (RR) TYPEs Registry
-  
+
 IANA is requested to create an entry, ESNI(0xff9f), in the existing
 registry for Resource Record (RR) TYPEs (defined in {{!RFC6895}}) with
 "Meaning" column value being set to "Encrypted SNI".
@@ -968,6 +1098,5 @@ It also has the following disadvantages:
 This document draws extensively from ideas in {{?I-D.kazuho-protected-sni}}, but
 is a much more limited mechanism because it depends on the DNS for the
 protection of the ESNI key. Richard Barnes, Christian Huitema, Patrick McManus,
-Matthew Prince, Nick Sullivan, and Martin Thomson also provided important ideas.
-
-
+Matthew Prince, Nick Sullivan, Martin Thomson, and David Benjamin also provided
+important ideas and contributions.
