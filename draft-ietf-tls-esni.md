@@ -784,7 +784,9 @@ performs the following checks:
   and proceed with the connection, as if the ClientEncryptedSNI did not match any known
   ESNIKeys structures.
 
-  [[TODO: we might consider acceptance of this binder to then require mixing a PSK into the schedule]]
+  [[TODO: we might consider acceptance of this binder to then require mixing a PSK
+  into the schedule, e.g., by injecting an ESNI-derived secret into the key schedule
+  via the EarlySecret salt parameter]]
 
 - If the ClientEncryptedSNI.key_share group does not match one in the ESNIKeys.keys,
   it MUST abort the connection with an "illegal_parameter" alert.
