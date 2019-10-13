@@ -437,7 +437,7 @@ structure:
    struct {
        ServerESNIResponseType response_type;
        select (response_type) {
-           case esni_accept:
+           case esni_accept:        uint8 nonce[32];
            case esni_retry_request: ESNIKeys retry_keys<1..2^16-1>;
        }
    } ServerEncryptedSNI;
@@ -448,7 +448,7 @@ response_type
 {{handle-server-response}} and {{server-behavior}}.}
 
 nonce
-: The contents of ClientESNIInner.nonce. (See {{client-behavior}}.)
+: The server-derived nonce. (See {{send-esni}}.)
 
 retry_keys
 : One or more ESNIKeys structures containing the keys that the client should use on
@@ -606,11 +606,10 @@ extension and the extension_binder_key is derived as follows:
 If the server negotiates TLS 1.3 or above and provides an "encrypted_server_name" extension
 in EncryptedExtensions, the client then processes the extension's "response_type" field:
 
-- If the value is "esni_accept", the client MUST check that the extension's
-  "nonce" field matches ClientESNIInner.nonce and otherwise abort the
-  connection with an "illegal_parameter" alert. The client then proceeds
-  with the connection as usual, authenticating the connection for the origin
-  server.
+- If the value is "esni_accept", the client MUST check that ServerEncryptedSNI.nonce
+  matches the derived nonce value and otherwise abort the connection with an
+  "illegal_parameter" alert. The client then proceeds with the connection as usual,
+  authenticating the connection for the origin server.
 
 - If the value is "esni_retry_request", the client proceeds with the handshake,
   authenticating for ESNIKeys.public_name as described in
@@ -665,8 +664,8 @@ calling application.
 
 If the server sends a HelloRetryRequest in response to the ClientHello
 and the client can send a second updated ClientHello per the rules in
-{{RFC8446}}, the "encrypted_server_name" extension MUST NOT change across
-ClientHello messages. However, a freshly computed ESNI binder must be computed
+{{RFC8446}}, the "encrypted_server_name" extension MUST NOT be sent in the
+second ClientHello message. However, a fresh ESNI binder MUST be computed
 in the second ClientHello.
 
 ### Authenticating for the public name {#auth-public-name}
@@ -783,10 +782,6 @@ performs the following checks:
   If this value is not present or does not validate, the server MUST ignore the extension
   and proceed with the connection, as if the ClientEncryptedSNI did not match any known
   ESNIKeys structures.
-
-  [[TODO: we might consider acceptance of this binder to then require mixing a PSK
-  into the schedule, e.g., by injecting an ESNI-derived secret into the key schedule
-  via the EarlySecret salt parameter]]
 
 - If the ClientEncryptedSNI.key_share group does not match one in the ESNIKeys.keys,
   it MUST abort the connection with an "illegal_parameter" alert.
