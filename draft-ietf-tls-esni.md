@@ -43,8 +43,10 @@ normative:
   RFC2119:
   RFC6234:
   RFC7918:
+  I-D.ietf-tls-external-psk-importer:
 
 informative:
+  CCB: DOI.10.14722/ndss.2015.23277
   I-D.ietf-tls-grease:
   SNIExtensibilityFailed:
     title: Accepting that other SNI name types will never work
@@ -571,35 +573,53 @@ with a CachedObject entry whose CachedInformationType is "cert", since this
 indication would divulge the true server name.
 
 ### Client Hello Binding {#client-hello-binding}
-
-To fully bind the ESNI extension contents to the rest of the ClientHello, an additional
-binding is inserted into the "pre_shared_key" extension. This is inserted as a special
-"ExtensionsPskIdentity" identity and "extensionsBinder" PskBinderEntry.
+To bind the ESNI extension contents to the rest of the ClientHello, we use an
+external PSK importer to add context to the PSK binders.
 
 ~~~
        struct {
            opaque identity<7..2^16-1> = "CHExt" || extension_type;
+           opaque label<0..2^8-1>;
+           opaque context<0..2^16-1>;
            uint32 obfuscated_ticket_age = 0;
-       } ExtensionsPskIdentity;
-
-       PskBinderEntry extensionsBinder;
+       } ESNIPskIdentity;
 ~~~
 
 identity
 : A label indicating that this a is a special PSK and binder for extensions, followed by the
   extension_type of the corresponding extension.
 
-extensionsBinder
-: A HMAC value computed in the same way as the Finished message but with the BaseKey being
-  the extension_binder_key derived from the particular corresponding extension.
-{: br}
+label
+: A label indicating the protocol for which the key is imported. Thus TLS 1.3 and QUICv1 MUST use "tls13" as the label.
+
+context
+: This field MUST be bound to the context used to derive the
+`encrypted_sni_binder_key`. If the ESNI is being used with a resumption, the
+resumption PSK MUST first be imported using the external PSK importer draft, and
+chained to the ESNI importer using a channel binding.  The context field SHOULD
+have a format consisting of an ordered list of pairs defined as follows:
+
+~~~
+    struct {
+        Protocol protocol_name;
+        opaque channel_binding<8...2^16-1>;
+    } ChannelBinding;
+~~~
+protocol
+: A label that describes the protocol that generated the channel binding.
+
+channel_binding
+: An {{!RFC5056}} compliant channel binding. This channel binding SHOULD also be a contributive channel binding [CCB].
 
 For "encrypted_server_name", the extension_type matches that of the "encrypted_server_name"
 extension and the extension_binder_key is derived as follows:
 
 ~~~~
-    encrypted_sni_binder_key = HKDF-Expand-Label(Zx, "esni psk binder", Hash(ESNIContents), Hash.length)
+    encrypted_sni_binder_key = HKDF-Expand-Label(Zx, "esni psk binder", Hash(ESNIContents), Hash(ESNIPskIdentity), prior_secrets, Hash.length)
 ~~~~
+
+prior_secrets
+: The secret keys of any external PSK importers used, listed in the order they are imported. This includes the external resumption PSK, if ESNI is being used with a resumption.
 
 ### Key Schedule Modification {#key-schedule-injection}
 
@@ -619,7 +639,10 @@ The key schedule modifications are shown below.
              v
    PSK ->  HKDF-Extract = Early Secret
              |
-             +-----> Derive-Secret(., "ext binder" | "res binder", "")
+             +-----> Derive-Secret(., "ext binder"
+             |                      | "res binder"
+             |                      | "imp ext binder"
+             |                      | "imp res binder" , "")
              |                     = binder_key
              |
              +-----> Derive-Secret(., "c e traffic", ClientHello)
