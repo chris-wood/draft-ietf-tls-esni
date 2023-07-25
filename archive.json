@@ -1,0 +1,1912 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2023-07-25T00:02:25.311098+00:00",
+  "repo": "chris-wood/draft-ietf-tls-esni",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "MDExOlB1bGxSZXF1ZXN0MjUyNTM0MDEx",
+      "title": "WIP.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/1",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2019-02-13T01:47:42Z",
+      "updatedAt": "2019-02-14T21:00:39Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "3013b3c0c7bd93202cd4ca847380de64352ec79f",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/multi-cdn",
+      "headRefOid": "b12c63c47e911433a867049efb062add746b9582",
+      "closedAt": "2019-02-14T21:00:39Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAyOTk5NDA4",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "ekr",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "A bunch of comments here. At a high level, I'm not sure the union is the right approach. I'd like to see an estimate of the actual size of an ESNIKeys record for a typical CDN.",
+          "createdAt": "2019-02-13T02:00:06Z",
+          "updatedAt": "2019-02-13T02:20:26Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "What's failure fallback?",
+              "createdAt": "2019-02-13T02:00:06Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 16,
+              "body": "This doesn't seem like quite the right requirement. I think I would try to set the problem up first.\r\n\r\n\"There are deployment environments in which a domain is served by multiple server operators who do not sure the ESNI Keys. Because ESNIKeys and A/AAAA lookup are independent, it is therefore possible to obtain an ESNIKeys record which does not match the A/AAAA records. Naively using this record would result in handshake failure. The design of the system must therefore allow clients to detect and recover from this situation.\"",
+              "createdAt": "2019-02-13T02:02:01Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 25,
+              "body": "This seems like good advice, but why is it just for split mode? And why does it belong here?",
+              "createdAt": "2019-02-13T02:02:38Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 32,
+              "body": "I think I actually covered this above.",
+              "createdAt": "2019-02-13T02:03:00Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 60,
+              "body": "These masks should be a length.",
+              "createdAt": "2019-02-13T02:05:02Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 53,
+              "body": "Cool people have a length field here so you can skip unknown types.",
+              "createdAt": "2019-02-13T02:05:14Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 73,
+              "body": "This seems like it needs to be unpacked. Like, why is this OK.",
+              "createdAt": "2019-02-13T02:05:49Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 77,
+              "body": "ITYM CIDR.",
+              "createdAt": "2019-02-13T02:05:56Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 143,
+              "body": "Oh, this is an interesting catch. Say that I go to ```www.example.com``` and I get ```alt.example.com```. You're saying that I lookup:\r\n\r\n```\r\nalt.example.com? A/AAAA\r\nwww.example.com? ESNIKeys\r\n```\r\n\r\nSo, I'm actually not sure that this is the right answer, as it depends on how alt-svc is being used. Consider the case where the origin is pointing to a CDN. Don't we want the CDN's ESNIKeys to control?\r\n\r\nIn either case, you should use \"origin\" and \"alternative\"\r\n\r\n\r\n\r\n\r\n\r\n",
+              "createdAt": "2019-02-13T02:12:52Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 145,
+              "body": "these queries -> ESNI queries.",
+              "createdAt": "2019-02-13T02:13:06Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 147,
+              "body": "Let's not get into an IPv6/IPv4 debate here.",
+              "createdAt": "2019-02-13T02:13:30Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 148,
+              "body": "I think you need a more concrete algorithm here, and to be clearer about what you want.",
+              "createdAt": "2019-02-13T02:14:05Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 170,
+              "body": "I'm not sure that this algorithm is quite what we want. \r\n\r\nStepping back, I think you want something like this:\r\n\r\n1. If you get ESNIKeys and it's got a full address, use the address.\r\n2. If you get A or AAAA, wait up to X seconds for ESNIKeys and then if you don't get it, proceed without. If you do get it, and it's got a full address, use that, as in (2).\r\n3. If you have ESNIKeys and either A or AAAA and the address mask matches, then use that address and ESNIKeys, possibly waiting for up to Y seconds if you have only A or AAAA and prefer the other type of address.\r\n4. If you have ESNIKeys and either A or AAAA and the address mask doesn't match then issue a query for the Hostname and that type of address.\r\n5. If you do all the queries mentioned above and you still don't have an address match, then error.\r\n\r\nI don't think you need the CNAME comparisons. How do they help?\r\n\r\n\r\n\r\n",
+              "createdAt": "2019-02-13T02:19:46Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMDAzODMz",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T02:21:54Z",
+          "updatedAt": "2019-02-13T02:28:05Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "Fallback to plaintext SNI.",
+              "createdAt": "2019-02-13T02:21:54Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 16,
+              "body": "Text LGTM! Will adopt.",
+              "createdAt": "2019-02-13T02:22:10Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 25,
+              "body": "Oh, this is just copy-pasted. We should revisit this in a separate issue?",
+              "createdAt": "2019-02-13T02:22:59Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 32,
+              "body": "\ud83d\udc4d ",
+              "createdAt": "2019-02-13T02:23:38Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 77,
+              "body": "Yep.",
+              "createdAt": "2019-02-13T02:25:37Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 145,
+              "body": "\ud83d\udc4d ",
+              "createdAt": "2019-02-13T02:25:46Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 147,
+              "body": "I'll remove it.",
+              "createdAt": "2019-02-13T02:25:57Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAyOTk3NDM5",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T01:50:58Z",
+          "updatedAt": "2019-02-13T02:45:09Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "nit: in the DNS",
+              "createdAt": "2019-02-13T01:50:58Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 14,
+              "body": "I don't think you've defined what fallback means at this point in the draft",
+              "createdAt": "2019-02-13T01:54:19Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 14,
+              "body": "I'm confused, is this paragraph describing the rationale for the solution, or the mechanism itself? If the former, then there probably shouldn't be normative text here",
+              "createdAt": "2019-02-13T01:55:25Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 19,
+              "body": "I'm not sure this work with DNS-based load balancing, where there is a long list of servers and the subset you get in the DNS depends on load or randomness. I think the property you want is: the addresses returned by the DNS (in A and AAAA records) for ESNI-enabled TLS servers SHOULD not depend on the queried domain.",
+              "createdAt": "2019-02-13T02:00:17Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 28,
+              "body": "I wouldn't name vendors in a draft this way",
+              "createdAt": "2019-02-13T02:00:56Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 34,
+              "body": "Now that I've finished this section, I feel like it was discussing rationale - but in that case I'd call that out in the section title and remove all normative text",
+              "createdAt": "2019-02-13T02:02:00Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 39,
+              "body": "Is \"canonical name\" the same as davidben's \"public name\"? If so I liked \"public name\" better",
+              "createdAt": "2019-02-13T02:03:27Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 49,
+              "body": "I'd just use the IP version - this enum takes a full byte anyway",
+              "createdAt": "2019-02-13T02:06:02Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 72,
+              "body": "I don't think \"terminal name\" is standard DNS terminology, so you'll need to define it in this draft",
+              "createdAt": "2019-02-13T02:07:49Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 72,
+              "body": "I don't think you can put a MUST here. Resolution is a process involving many different bits of infrastructure. RFC 2119 normative language only applied to implementations of this document",
+              "createdAt": "2019-02-13T02:09:16Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 56,
+              "body": "The text above this diagram mentions CIDR, the text below mentions SIDR (OK that's a typo) but this isn't CIDR. CIDR would be an address followed by a prefix length. I would recommend using either a 1-byte prefix length, or using address ranges instead, as in IKEv2 traffic selectors https://tools.ietf.org/html/rfc5996#section-3.13.1",
+              "createdAt": "2019-02-13T02:11:51Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 68,
+              "body": "Pointer might get confused with DNS PTR records, I'd use a different name",
+              "createdAt": "2019-02-13T02:12:52Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 142,
+              "body": "I don't think Alt-Svc means you put the origin in the SNI when handshaking with the alternate server.\r\nhttps://tools.ietf.org/html/rfc7838#section-2.1",
+              "createdAt": "2019-02-13T02:35:20Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            },
+            {
+              "originalPosition": 145,
+              "body": "This violates many many layers and is going to be incredibly hard to implement, as many vendors implement those systems in separate codebases. I'm worried this will get significant pushback at the IETF",
+              "createdAt": "2019-02-13T02:45:00Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzA1ODgx",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:19:07Z",
+          "updatedAt": "2019-02-13T16:19:08Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "`Failure fallback` does seem hard to parse. Perhaps just write out `This is necessary to avoid falling back from ESNI to plaintext SNI.`",
+              "createdAt": "2019-02-13T16:19:08Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzE1NTYy",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:34:53Z",
+          "updatedAt": "2019-02-13T16:34:53Z",
+          "comments": [
+            {
+              "originalPosition": 143,
+              "body": "I think we should address this in a separate issue as it's unrelated to this change. (Migrated text.)",
+              "createdAt": "2019-02-13T16:34:53Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzI5MTY5",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:57:48Z",
+          "updatedAt": "2019-02-13T16:57:48Z",
+          "comments": [
+            {
+              "originalPosition": 170,
+              "body": "The CNAME comparison is for the case where the address set is empty or the mask does not match, yet the A/AAAA yielded a terminal CNAME that matches the contents of the ESNIKeys structure. If there's a match there, then clients may connect to the address, even though there's a netmask mismatch. I *think* this works.",
+              "createdAt": "2019-02-13T16:57:48Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzI5MjI1",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:57:54Z",
+          "updatedAt": "2019-02-13T16:57:55Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "\ud83d\udc4d Fixed.",
+              "createdAt": "2019-02-13T16:57:55Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzI5NzM1",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:58:49Z",
+          "updatedAt": "2019-02-13T16:58:49Z",
+          "comments": [
+            {
+              "originalPosition": 19,
+              "body": "This particular bit is sort of unrelated to these load balancers. I tried to tidy it up in the latest push.",
+              "createdAt": "2019-02-13T16:58:49Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzI5OTI1",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:59:08Z",
+          "updatedAt": "2019-02-13T16:59:08Z",
+          "comments": [
+            {
+              "originalPosition": 72,
+              "body": "Fine, fine. :)",
+              "createdAt": "2019-02-13T16:59:08Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzMwMjY3",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:59:43Z",
+          "updatedAt": "2019-02-13T16:59:43Z",
+          "comments": [
+            {
+              "originalPosition": 56,
+              "body": "I'm just going with the 1 byte prefix length.",
+              "createdAt": "2019-02-13T16:59:43Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzMwMzIy",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T16:59:49Z",
+          "updatedAt": "2019-02-13T16:59:50Z",
+          "comments": [
+            {
+              "originalPosition": 68,
+              "body": "Recommendations?",
+              "createdAt": "2019-02-13T16:59:50Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzMwNTAz",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T17:00:07Z",
+          "updatedAt": "2019-02-13T17:00:08Z",
+          "comments": [
+            {
+              "originalPosition": 142,
+              "body": "Copied text. Please file an open issue against it!",
+              "createdAt": "2019-02-13T17:00:07Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzMwODg1",
+          "commit": {
+            "abbreviatedOid": "df974e0"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T17:00:47Z",
+          "updatedAt": "2019-02-13T17:00:47Z",
+          "comments": [
+            {
+              "originalPosition": 142,
+              "body": "(Also, I think we cleared this up yesterday?)",
+              "createdAt": "2019-02-13T17:00:47Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzM1OTEy",
+          "commit": {
+            "abbreviatedOid": "74a7859"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T17:10:06Z",
+          "updatedAt": "2019-02-13T17:10:06Z",
+          "comments": [
+            {
+              "originalPosition": 141,
+              "body": "Nit rather than `have`, say `contain`?",
+              "createdAt": "2019-02-13T17:10:06Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzM2NzY0",
+          "commit": {
+            "abbreviatedOid": "74a7859"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T17:11:39Z",
+          "updatedAt": "2019-02-13T17:11:39Z",
+          "comments": [
+            {
+              "originalPosition": 150,
+              "body": "Should you explain that if the ESNIKeys arrives after the TCP connection is attempted, but before the TLS handshake begins, and it matches the addresses, you should still use ESNI?",
+              "createdAt": "2019-02-13T17:11:39Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzMzM3Mzcz",
+          "commit": {
+            "abbreviatedOid": "74a7859"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T17:12:47Z",
+          "updatedAt": "2019-02-13T17:12:48Z",
+          "comments": [
+            {
+              "originalPosition": 169,
+              "body": "`said address` is getting confusing here now that there are multiple addresses (A/AAAA and ESNIKeys) floating around",
+              "createdAt": "2019-02-13T17:12:48Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDA3ODMw",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T19:37:16Z",
+          "updatedAt": "2019-02-13T19:37:16Z",
+          "comments": [
+            {
+              "originalPosition": 142,
+              "body": "#132",
+              "createdAt": "2019-02-13T19:37:16Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDMyNjk5",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:32:31Z",
+          "updatedAt": "2019-02-13T20:32:31Z",
+          "comments": [
+            {
+              "originalPosition": 143,
+              "body": "#132",
+              "createdAt": "2019-02-13T20:32:31Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM0NzQz",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:37:26Z",
+          "updatedAt": "2019-02-13T20:37:26Z",
+          "comments": [
+            {
+              "originalPosition": 162,
+              "body": "This is the part that could be a serious issue for implementors. When you use `getaddrinfo()` you don't have access to CNAMEs that could have occurred. I would make this step optional",
+              "createdAt": "2019-02-13T20:37:26Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM1Mjcy",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:38:45Z",
+          "updatedAt": "2019-02-13T20:38:46Z",
+          "comments": [
+            {
+              "originalPosition": 167,
+              "body": "This sounds like slow and complicated machinery that is unnecessary - why don't you just require the ESNI record to contain full addresses?",
+              "createdAt": "2019-02-13T20:38:45Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM1OTYw",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:40:23Z",
+          "updatedAt": "2019-02-13T20:40:23Z",
+          "comments": [
+            {
+              "originalPosition": 178,
+              "body": "This isn't deterministic, on the contrary it's probabilistic - the only value of the 50ms delay in HEv2 is to move the probability of using IPv6 from 50% to 99%. You'd get similar results here",
+              "createdAt": "2019-02-13T20:40:23Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM2NzIy",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:42:16Z",
+          "updatedAt": "2019-02-13T20:42:17Z",
+          "comments": [
+            {
+              "originalPosition": 141,
+              "body": "Fixed!",
+              "createdAt": "2019-02-13T20:42:16Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM2NzY2",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:42:23Z",
+          "updatedAt": "2019-02-13T20:42:23Z",
+          "comments": [
+            {
+              "originalPosition": 150,
+              "body": "Fixed!",
+              "createdAt": "2019-02-13T20:42:23Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM3MDUx",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:43:03Z",
+          "updatedAt": "2019-02-13T20:43:03Z",
+          "comments": [
+            {
+              "originalPosition": 167,
+              "body": "As discussed, not every operator can do that.",
+              "createdAt": "2019-02-13T20:43:03Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM3MjU4",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:43:29Z",
+          "updatedAt": "2019-02-13T20:43:29Z",
+          "comments": [
+            {
+              "originalPosition": 178,
+              "body": "Deterministic isn't the right word -- I mean to say it converges. ",
+              "createdAt": "2019-02-13T20:43:29Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzNDM4MTE3",
+          "commit": {
+            "abbreviatedOid": "19a7828"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-13T20:45:34Z",
+          "updatedAt": "2019-02-13T20:45:35Z",
+          "comments": [
+            {
+              "originalPosition": 162,
+              "body": "Indeed, it can be, per client policy. I'll rewrite the \"should\" bit for the algorithm to say that anything beyond use of full addresses is not needed.",
+              "createdAt": "2019-02-13T20:45:34Z",
+              "updatedAt": "2019-02-13T20:51:19Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "MDExOlB1bGxSZXF1ZXN0MjUzMjIwNDQw",
+      "title": "Add simpler PR without name-based host pointers and netmasks.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/2",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2019-02-14T20:59:32Z",
+      "updatedAt": "2019-02-15T03:51:06Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "3013b3c0c7bd93202cd4ca847380de64352ec79f",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/multi-cdn-simple",
+      "headRefOid": "8a1818b50cddf412ac9daf5853b8be624e6823f3",
+      "closedAt": "2019-02-15T03:51:06Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjAzOTgzNDE4",
+          "commit": {
+            "abbreviatedOid": "bcd3fe5"
+          },
+          "author": "DavidSchinazi",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "This is a lot simpler to understand and reason about than the previous proposal, thanks! All comments are minor nits. Apart from those I support this change.",
+          "createdAt": "2019-02-14T21:36:43Z",
+          "updatedAt": "2019-02-14T21:55:17Z",
+          "comments": [
+            {
+              "originalPosition": 7,
+              "body": "Nit: in _the_ DNS",
+              "createdAt": "2019-02-14T21:36:43Z",
+              "updatedAt": "2019-02-15T03:51:05Z"
+            },
+            {
+              "originalPosition": 19,
+              "body": "I still don't like this text but I've realized you just moved it so I filed #133",
+              "createdAt": "2019-02-14T21:45:58Z",
+              "updatedAt": "2019-02-15T03:51:05Z"
+            },
+            {
+              "originalPosition": 38,
+              "body": "nit: `address_v4(4)` and `address_v6(6)`",
+              "createdAt": "2019-02-14T21:47:02Z",
+              "updatedAt": "2019-02-15T03:51:05Z"
+            },
+            {
+              "originalPosition": 116,
+              "body": "nit: querying _the_ DNS",
+              "createdAt": "2019-02-14T21:51:44Z",
+              "updatedAt": "2019-02-15T03:51:05Z"
+            },
+            {
+              "originalPosition": 130,
+              "body": "nit: CD should be in milliseconds not seconds since the default below is 50ms",
+              "createdAt": "2019-02-14T21:52:50Z",
+              "updatedAt": "2019-02-15T03:51:05Z"
+            },
+            {
+              "originalPosition": 126,
+              "body": "nit: I would remove the non-normative shoulds entirely, as this is describing an algorithm. Just say `clients initiate`. Same comment below",
+              "createdAt": "2019-02-14T21:54:21Z",
+              "updatedAt": "2019-02-15T03:51:05Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "id": "MDExOlB1bGxSZXF1ZXN0MjUzMjIxNDY5",
+      "title": "Add multi-CDN proposal that uses address sets, netmasks, and names.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/3",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2019-02-14T21:03:11Z",
+      "updatedAt": "2019-02-27T16:03:57Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "3013b3c0c7bd93202cd4ca847380de64352ec79f",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/multi-cdn",
+      "headRefOid": "7adfa01707ef34bca44891084f386d2c587e1e04",
+      "closedAt": "2019-02-27T16:03:57Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA1MzEzNDA4",
+          "commit": {
+            "abbreviatedOid": "f5d374c"
+          },
+          "author": "enygren",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-19T16:25:13Z",
+          "updatedAt": "2019-02-19T16:25:14Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "replace with \"return the same set of A and AAAA records for all ESNI-enabled server-names they service\" or even better \"have equivalent behavior for how A and AAAA records are returned for all ESNI-enabled server-names they service\" \r\n\r\n(There is often more than one A/AAAA record in the RRSET, and many operators return different A/AAAA records at different points in time for load-balancing purposes.)",
+              "createdAt": "2019-02-19T16:25:13Z",
+              "updatedAt": "2019-02-27T05:17:04Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "id": "MDExOlB1bGxSZXF1ZXN0MjUzMzAwMTUw",
+      "title": "Add simpler PR without name-based host pointers and netmasks.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/4",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2019-02-15T03:51:37Z",
+      "updatedAt": "2019-02-27T16:03:49Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "3013b3c0c7bd93202cd4ca847380de64352ec79f",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/multi-cdn-simple",
+      "headRefOid": "293f61c122f026aed9c06d1742325110e4b8bf5b",
+      "closedAt": "2019-02-27T16:03:49Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA3MDg3OTgw",
+          "commit": {
+            "abbreviatedOid": "2b6f7c1"
+          },
+          "author": "kazuho",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "Just my two cents.",
+          "createdAt": "2019-02-23T01:43:15Z",
+          "updatedAt": "2019-02-23T01:53:17Z",
+          "comments": [
+            {
+              "originalPosition": 19,
+              "body": "Maybe s/Servers operating in Split Mode/Client-facing servers/?\r\n\r\nI suggest this because the text does not look specific to Split Mode, and unless we make the change, we need to add a paragraph that discusses about Shared Mode separately.",
+              "createdAt": "2019-02-23T01:43:15Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            },
+            {
+              "originalPosition": 50,
+              "body": "I think the idea of sending addresses is fine, but the problem is how huge the ESNI record would become.\r\n\r\nConsidering that, I think we need to at least have a netmask field for each address.\r\n\r\nWe could go a bit farther and do somthing like:\r\n```\r\nstruct {\r\n    uint8 netmask;\r\n    opaque network_address[(netmask + 7) / 8];\r\n} TypedAddress;\r\n\r\nstruct {\r\n    AddressType address_type;\r\n    TypedAddress addresses<1..2^16-1>;\r\n} AddressList;\r\n```\r\n\r\nThis saves:\r\n* one byte per entry (because `address_type` appears one per list rather than once per address)\r\n* for IPv4 addresses, saves one byte per entry assuming that the netmask is not greater than /24\r\n* for IPv6 addresses, save like 8 bytes per entry assuming that the netmask is like /64",
+              "createdAt": "2019-02-23T01:51:10Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            },
+            {
+              "originalPosition": 88,
+              "body": "I do not think there's a need to introduce the concept of \"mandatory extensions\" considering the fact that `address_set` is not using the `extensions` field.",
+              "createdAt": "2019-02-23T01:52:30Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA3MTMyMzg2",
+          "commit": {
+            "abbreviatedOid": "2b6f7c1"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-24T02:00:46Z",
+          "updatedAt": "2019-02-24T02:00:46Z",
+          "comments": [
+            {
+              "originalPosition": 19,
+              "body": "This is not new text -- it's copied.",
+              "createdAt": "2019-02-24T02:00:46Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA3MTMyNDI2",
+          "commit": {
+            "abbreviatedOid": "2b6f7c1"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-24T02:01:47Z",
+          "updatedAt": "2019-02-24T02:01:47Z",
+          "comments": [
+            {
+              "originalPosition": 50,
+              "body": "What value would the netmask serve? If A/AAAA and ESNI mismatch occurs frequently, then a mask is insufficient. If it doesn't occur frequently, then including anything but a full address seems less optimal. I would prefer to keep this simple here.",
+              "createdAt": "2019-02-24T02:01:47Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA3MTMyNDY4",
+          "commit": {
+            "abbreviatedOid": "2b6f7c1"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-24T02:02:37Z",
+          "updatedAt": "2019-02-24T02:02:37Z",
+          "comments": [
+            {
+              "originalPosition": 88,
+              "body": "This is one way in which folks can write an extension draft specifying the netmask. I do not think that should be done here. ",
+              "createdAt": "2019-02-24T02:02:37Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA3MTM0NTc1",
+          "commit": {
+            "abbreviatedOid": "2b6f7c1"
+          },
+          "author": "kazuho",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-24T03:58:53Z",
+          "updatedAt": "2019-02-24T03:58:53Z",
+          "comments": [
+            {
+              "originalPosition": 50,
+              "body": "Two values:\r\n* Using netmask is a space efficient way of representing multiple addresses. Organizations running servers at mass-scale often setup multiple servers (serving same set of origins) within a single network address. I think it's important to keep the size of the structure (and hence the DNS record) small.\r\n* Organizations often install new servers within a pre-allocated network address. Having netmask in the ESNI record removes the necessity to update the ESNI record every time a new server is being installed.",
+              "createdAt": "2019-02-24T03:58:53Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA3MTQ5MjE1",
+          "commit": {
+            "abbreviatedOid": "2b6f7c1"
+          },
+          "author": "kazuho",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-24T12:18:59Z",
+          "updatedAt": "2019-02-24T12:19:00Z",
+          "comments": [
+            {
+              "originalPosition": 19,
+              "body": "Ah. Thank you for pointing out that. I missed that. Maybe I need to reread the whole draft.",
+              "createdAt": "2019-02-24T12:18:59Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA4MjU5NDQz",
+          "commit": {
+            "abbreviatedOid": "0c80fec"
+          },
+          "author": "ekr",
+          "authorAssociation": "NONE",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2019-02-26T23:07:27Z",
+          "updatedAt": "2019-02-26T23:55:48Z",
+          "comments": [
+            {
+              "originalPosition": 12,
+              "body": "For extra credit, try to make this na\\\"{i}ve",
+              "createdAt": "2019-02-26T23:07:28Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            },
+            {
+              "originalPosition": 13,
+              "body": "I don't think we want to say that. The current spec requires hard failure.",
+              "createdAt": "2019-02-26T23:07:42Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            },
+            {
+              "originalPosition": 96,
+              "body": "You want MAY, right?",
+              "createdAt": "2019-02-26T23:54:11Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            },
+            {
+              "originalPosition": 147,
+              "body": "You want a MUST, right?",
+              "createdAt": "2019-02-26T23:54:35Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            },
+            {
+              "originalPosition": 153,
+              "body": "Hmm... So you are saying that the extension is mandatory to have? That doesn't seem right. I would assume that if you had ESNI + A/AAAA then you would be good to go. Otherwise, what's the point of the A/AAAA resolution?",
+              "createdAt": "2019-02-26T23:55:42Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA4Mjc4NDg1",
+          "commit": {
+            "abbreviatedOid": "0c80fec"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-27T00:14:38Z",
+          "updatedAt": "2019-02-27T00:14:39Z",
+          "comments": [
+            {
+              "originalPosition": 12,
+              "body": "I'll just drop this sentence entirely. ",
+              "createdAt": "2019-02-27T00:14:38Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA4Mjc4NDk2",
+          "commit": {
+            "abbreviatedOid": "0c80fec"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-27T00:14:42Z",
+          "updatedAt": "2019-02-27T00:14:42Z",
+          "comments": [
+            {
+              "originalPosition": 13,
+              "body": "Dropped!",
+              "createdAt": "2019-02-27T00:14:42Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA4Mjc4NTE5",
+          "commit": {
+            "abbreviatedOid": "0c80fec"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-27T00:14:46Z",
+          "updatedAt": "2019-02-27T00:14:46Z",
+          "comments": [
+            {
+              "originalPosition": 96,
+              "body": "Yep!",
+              "createdAt": "2019-02-27T00:14:46Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MjA4Mjc5MDAw",
+          "commit": {
+            "abbreviatedOid": "0c80fec"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-02-27T00:16:41Z",
+          "updatedAt": "2019-02-27T00:16:41Z",
+          "comments": [
+            {
+              "originalPosition": 147,
+              "body": "Since this is a suggested algorithm, I left out MUST. Perhaps a SHOULD work suffice?",
+              "createdAt": "2019-02-27T00:16:41Z",
+              "updatedAt": "2019-02-27T05:08:41Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzA3MTA0NTI5",
+      "title": "Initial key schedule injection proposal.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/5",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2019-08-13T22:33:40Z",
+      "updatedAt": "2020-03-19T00:45:13Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "895b88af6ce71b25ddd41c89162839287e021827",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/key-schedule-injection",
+      "headRefOid": "a22ffbe5e5aa1f00f9f6d6b541f00379bde8e937",
+      "closedAt": "2020-03-19T00:45:13Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "body": "A note for later: we might consider acceptance of this binder to then require mixing a PSK into the schedule via the EarlySecret salt parameter. @davidben, what do you think?",
+          "createdAt": "2019-10-13T14:39:51Z",
+          "updatedAt": "2019-10-13T14:40:09Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc0OTkxODkx",
+          "commit": {
+            "abbreviatedOid": "7770bfb"
+          },
+          "author": "dvorak42",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-14T16:05:12Z",
+          "updatedAt": "2019-08-14T16:09:35Z",
+          "comments": [
+            {
+              "originalPosition": 31,
+              "body": "Probably need to update ServerEncryptedSNI.nonce to be 32 bytes.",
+              "createdAt": "2019-08-14T16:05:12Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 48,
+              "body": "*modification",
+              "createdAt": "2019-08-14T16:05:36Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 67,
+              "body": "Shouldn't this be after the Nonce, since otherwise the binding below doesn't include the nonce?",
+              "createdAt": "2019-08-14T16:08:27Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 90,
+              "body": "Looks like you do the last 16 octets in the computation below.",
+              "createdAt": "2019-08-14T16:09:05Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc0OTk1NDk5",
+          "commit": {
+            "abbreviatedOid": "7770bfb"
+          },
+          "author": "dvorak42",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-14T16:11:25Z",
+          "updatedAt": "2019-08-14T16:11:26Z",
+          "comments": [
+            {
+              "originalPosition": 67,
+              "body": "Actually maybe this needs to be here to prevent having to rewind the key schedule, though then the input to the AEAD-Encrypt for 'r' down below should probably include the nonce?",
+              "createdAt": "2019-08-14T16:11:25Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc1NjIwOTU2",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "davidben",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-15T19:21:43Z",
+          "updatedAt": "2019-08-15T21:22:30Z",
+          "comments": [
+            {
+              "originalPosition": 76,
+              "body": "Nit: s/early/esni/? Not sure what \"early\" means in this context.",
+              "createdAt": "2019-08-15T19:21:43Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 5,
+              "body": "Does the nonce still need to be stuck into the extension if it's going into the key schedule anyway? (Also since it's the input to the key that encrypts this, we're probably violating some rule about using the same secret in two related ways.)",
+              "createdAt": "2019-08-15T19:25:31Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 16,
+              "body": "Have we avoided nonce reuse yet? I'm not sure if we have. I think we'd have to either:\r\n\r\n* Clear the AAD so you can just the ESNI extension over blindly. This renders GREASE ineffective again[*].\r\n* Require the client generate a different key share between the first and second ClientHello's ESNI value.\r\n\r\n[*] If ESNI client values have no direct binding to the rest of the ClientHello, the attacker can just swap out the key share, let the server respond, and see if it's able to decrypt.",
+              "createdAt": "2019-08-15T21:14:55Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 52,
+              "body": "Should we replace the client-selected nonce value with just something derived from Z? Saves 32 bytes. I guess the main awkward factor is its interaction with the first and second ClientHello business... (though we could say it's always the second ClientHello's Z value.)\r\n\r\nOh, except the nonce is still load-bearing as long as the server's required to check the two ESNIs match on HRR.\r\n\r\nBleh. Too many interrelated pieces. :-)",
+              "createdAt": "2019-08-15T21:17:31Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 110,
+              "body": "This feels a bit overkill (three KDFs and an encrypt, where we actually throw away the tag portion and keep just the ciphertext), and also introduces a complication that you need to compute `bound_master_secret` before you know that it's actually going into the key schedule.\r\n\r\nThat's not fatal, but given that we'd, but for \"don't stick out\", be perfectly happy with this just being a boolean, it seems we can just toss together Z and r1 into the HKDF somehow.\r\n\r\n```\r\n  signal_key = HKDF-Expand-Label(Zx, \"esni signal\", Hash(ESNIContents), Hash.length)\r\n  r1 = RandomBytes(16)\r\n  // FIXME: This line is a little odd. We could fold the two HKDFs together, but then the client needs\r\n  // to retain Zx. We could use the nonce, but then the nonce probably shouldn't be the input to the\r\n  // key schedule, since it'd again be the same secret used two different ways.\r\n  r2 = HKDF-Expand-Label(signal_key, \"esni signal\", r1, 16)\r\n```",
+              "createdAt": "2019-08-15T21:20:11Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            },
+            {
+              "originalPosition": 126,
+              "body": "It's specifically `esni_accept`, I think. `esni_retry_request` won't swap the key schedule. Maybe just fold this into \"If the value is [...]\"? Also s/secure signal/key schedule switch signal/?",
+              "createdAt": "2019-08-15T21:22:24Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2MDIxMzMz",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-16T15:34:55Z",
+          "updatedAt": "2019-08-16T15:34:55Z",
+          "comments": [
+            {
+              "originalPosition": 76,
+              "body": "Earlier than the other \"dervied\"s :-) \"esni\" is probably better! ",
+              "createdAt": "2019-08-16T15:34:55Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2MDI2MDIy",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-16T15:43:59Z",
+          "updatedAt": "2019-08-16T15:43:59Z",
+          "comments": [
+            {
+              "originalPosition": 126,
+              "body": "> It's specifically esni_accept, I think. esni_retry_request won't swap the key schedule. Maybe just fold this into \"If the value is [...]\"? Also s/secure signal/key schedule switch signal/?\r\n\r\nWorks for me! \ud83d\udc4d ",
+              "createdAt": "2019-08-16T15:43:59Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2MDI5NDQx",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-16T15:50:26Z",
+          "updatedAt": "2019-08-16T15:50:26Z",
+          "comments": [
+            {
+              "originalPosition": 110,
+              "body": "That works. I went with encryption to start since it seemed safer to use a PRP rather than a PRF. But since this is a one-time key, a PRF is fine, and much simpler!",
+              "createdAt": "2019-08-16T15:50:26Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2MDMwMzM5",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-16T15:52:05Z",
+          "updatedAt": "2019-08-16T15:52:05Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "I was assuming (2) but never wrote it down. I'll just revert this, since it's orthogonal.",
+              "createdAt": "2019-08-16T15:52:05Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2MDMwNDc3",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-16T15:52:22Z",
+          "updatedAt": "2019-08-16T15:52:23Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "Probably not -- let's axe it.",
+              "createdAt": "2019-08-16T15:52:23Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2MDMzMTU0",
+          "commit": {
+            "abbreviatedOid": "c69a3ff"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-16T15:57:44Z",
+          "updatedAt": "2019-08-16T15:57:45Z",
+          "comments": [
+            {
+              "originalPosition": 52,
+              "body": "That would be cleaner, as we could then drop the nonce entirely. I'll do that.",
+              "createdAt": "2019-08-16T15:57:44Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2NDY4ODA1",
+          "commit": {
+            "abbreviatedOid": "db0ff67"
+          },
+          "author": "kazuho",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-19T10:26:25Z",
+          "updatedAt": "2019-08-19T10:26:26Z",
+          "comments": [
+            {
+              "originalPosition": 143,
+              "body": "I do not think we need \"esni_accept\" any more, now that the server recognizing the contents of the ESNI extension is signaled using the last 16 octets of ServerHello.random. The traffic secrets of the Handshake records would be different based on if the server recognized the contents of the ESNI extension, and there is no chance of the client misidentifying the condition.",
+              "createdAt": "2019-08-19T10:26:25Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjc2NjU4NDUw",
+          "commit": {
+            "abbreviatedOid": "db0ff67"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-08-19T16:00:00Z",
+          "updatedAt": "2019-08-19T16:00:00Z",
+          "comments": [
+            {
+              "originalPosition": 143,
+              "body": "Yep, true!",
+              "createdAt": "2019-08-19T16:00:00Z",
+              "updatedAt": "2019-09-28T13:39:29Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzIxMjgwMjI0",
+      "title": "Initial PSK binding proposal.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/6",
+      "state": "MERGED",
+      "author": "dvorak42",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "This adds the PSK binding via a custom PSK identity associated with extensions. Maybe a more general version would be useful to stick somewhere so that any extension which wants to do a binding doesn't need to hack it in?\r\n\r\nAdditional changes:\r\n- Remove label swapping, since the PSK ClientHello binding should be sufficient to prevent reuse.\r\n- Remove the AAD of KeyShareClientHello since the PSK ClientHello binding should be sufficient.\r\n- Since now the encrypted_sni extension doesn't change at all as a result of HRR, simplify the wording to make sure the whole extension doesn't change. (server might not actually need to check if doesn't change, it just needs to be consistent in the processing of the extension, ignoring CH1 entirely, but saying it checks it doesn't change seems simplest.)\r\n\r\nThe naming/formatting of the Client Hello Binding section probably could use some work, not sure how to indicate that this is a hack onto an existing extension. (There was a nicer structure where there was a single PSK identity for extensions, and then we had a struct embedded in the PskBinderEntry, but it looks like the max PskBinderEntry size is 255 bytes, which is kind of limiting, though maybe doable if we think no more than 7 extensions will play these binding games.)",
+      "createdAt": "2019-09-25T14:34:05Z",
+      "updatedAt": "2019-09-28T17:31:41Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "caw/key-schedule-injection",
+      "baseRefOid": "db0ff6761840afb311316001dc7ee5fba79b15a8",
+      "headRepository": "dvorak42/draft-ietf-tls-esni",
+      "headRefName": "caw/key-schedule-injection",
+      "headRefOid": "86899775189e880710d42bb2ba06c024fa37be85",
+      "closedAt": "2019-09-28T13:36:52Z",
+      "mergedAt": "2019-09-28T13:36:52Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "7bd739c48ec8d872f674dd561e560a4e182f019f"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjk0NjM3MDgz",
+          "commit": {
+            "abbreviatedOid": "8689977"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2019-09-28T13:29:02Z",
+          "updatedAt": "2019-09-28T13:36:44Z",
+          "comments": [
+            {
+              "originalPosition": 48,
+              "body": "nit: We probably need to wrap this in \"~~~\" ",
+              "createdAt": "2019-09-28T13:29:02Z",
+              "updatedAt": "2019-09-28T13:36:44Z"
+            },
+            {
+              "originalPosition": 49,
+              "body": "I wonder if folks will complain about possible identity collisions. The binders won't be the same since we use `encrypted_sni_binder_key` below, so perhaps it's not an issue? ",
+              "createdAt": "2019-09-28T13:34:17Z",
+              "updatedAt": "2019-09-28T13:36:44Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjk0NjQ2NTk5",
+          "commit": {
+            "abbreviatedOid": "8689977"
+          },
+          "author": "dvorak42",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-09-28T17:31:40Z",
+          "updatedAt": "2019-09-28T17:31:41Z",
+          "comments": [
+            {
+              "originalPosition": 49,
+              "body": "I'm hoping that we don't have accidental identity collisions (a real PSK with an identity of CHExtff07. An attacker could swap in their own PSK binder, but without knowing the encrypted_sni_binder_key, they shouldn't be able to generate a passing binder.\r\n\r\nTo have it written down somewhere, an alternative construction is having a single identity for all extensions, and then making the binder be a sequence of extension_type, binder pairs, but since the binders are limited to 255 bytes, that doesn't really extend very far. (Though I guess we could just stuff multiple extensions CHExtensionBinder1, CHExtensionBinder2, ..., but that seems hacky for a savings of a few bytes).",
+              "createdAt": "2019-09-28T17:31:41Z",
+              "updatedAt": "2019-09-28T17:31:41Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzIyNTI1Nzk3",
+      "title": "ESNI PSK binders -- no key schedule injection.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/7",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "This gives us the CH binding guarantees, yet does not have the key schedule injection hardening change. ",
+      "createdAt": "2019-09-29T17:54:52Z",
+      "updatedAt": "2020-03-19T00:45:04Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "895b88af6ce71b25ddd41c89162839287e021827",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/esni-binders",
+      "headRefOid": "3a3b6d11a742601a56ed4b5b770f26cf462ead5a",
+      "closedAt": "2020-03-19T00:45:04Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjk1NzkwMjgx",
+          "commit": {
+            "abbreviatedOid": "6e62fae"
+          },
+          "author": "davidben",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-01T18:05:23Z",
+          "updatedAt": "2019-10-01T18:05:23Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "Did you mean to remove this? If we're losing the key schedule injection, we still need this so the client has confirmation from the server that it decrypted ESNI. I notice below the PR adds an \"esni nonce\" derivation and keeps\r\n\r\n> If the value is \"esni_accept\", the client MUST check that the extension's \"nonce\" field matches ClientESNIInner.nonce and otherwise abort the \"nonce\" field matches ClientESNIInner.nonce\"\r\n\r\nPerhaps keep this here, be consistent about 16 vs 32, and then rephrase that sentence slightly so say you match ServerEncryptedSNI.nonce against the derived nonce value?",
+              "createdAt": "2019-10-01T18:05:23Z",
+              "updatedAt": "2019-10-13T14:37:46Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mjk1ODE3MTM5",
+          "commit": {
+            "abbreviatedOid": "6e62fae"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-01T18:50:13Z",
+          "updatedAt": "2019-10-01T18:50:13Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "No :( sloppy on my part. Thanks for checking!",
+              "createdAt": "2019-10-01T18:50:13Z",
+              "updatedAt": "2019-10-13T14:37:46Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzMxNzc4Mzk3",
+      "title": "Adopt HTTPSSVC.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/8",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2019-10-23T22:51:30Z",
+      "updatedAt": "2019-10-25T00:21:12Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "895b88af6ce71b25ddd41c89162839287e021827",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/httpsvc",
+      "headRefOid": "2daa3dfc5b830b2d1ba785b4c4e7aa5d39715fa3",
+      "closedAt": "2019-10-25T00:21:12Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2MjM3MzI1",
+          "commit": {
+            "abbreviatedOid": "d690086"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-23T22:54:23Z",
+          "updatedAt": "2019-10-23T22:54:24Z",
+          "comments": [
+            {
+              "originalPosition": 129,
+              "body": "```suggestion\r\n## HTTPSSVC Publication in the DNS\r\n```",
+              "createdAt": "2019-10-23T22:54:23Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2Mjk5NjA3",
+          "commit": {
+            "abbreviatedOid": "937f780"
+          },
+          "author": "bemasc",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "Very exciting!",
+          "createdAt": "2019-10-24T03:17:26Z",
+          "updatedAt": "2019-10-24T03:31:27Z",
+          "comments": [
+            {
+              "originalPosition": 217,
+              "body": "I think this also applies to Shared Mode.",
+              "createdAt": "2019-10-24T03:17:27Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            },
+            {
+              "originalPosition": 426,
+              "body": "s/sending/publishing/",
+              "createdAt": "2019-10-24T03:19:00Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            },
+            {
+              "originalPosition": 33,
+              "body": "Nit: markdown anchor name",
+              "createdAt": "2019-10-24T03:20:20Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            },
+            {
+              "originalPosition": 188,
+              "body": "I think this paragraph needs help.  With HTTPSSVC, an ESNIConfig is never used with the \"independent\" A/AAA lookups.  Rather, the ESNIConfig is only used in conjunction with IP addresses that were identified (directly or indirectly) by the HTTPSSVC record.\r\n\r\nIn HTTPSSVC terminology, I think the requirement you're getting at is: When publishing an HTTPSSVC record containing an ESNI public key, the publisher MUST ensure that all IP addresses of SvcDomainName correspond to servers that have access to the corresponding private key or are authoritative for the fallback domain.  (This requirement seems pretty obvious to me, but there might be an argument for stating it more explicitly in the SVCB draft.)",
+              "createdAt": "2019-10-24T03:28:01Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            },
+            {
+              "originalPosition": 131,
+              "body": "As the name suggests, HTTPSSVC is HTTPS-specific, whereas ESNI is presumably applicable to TLS generally.  As such, it seems a little odd to see it covered in detail here.  At a minimum, a sentence clarifying that this section is specific to HTTPS would seem appropriate.  Alternatively, this could be rephrased in terms of SVCB.",
+              "createdAt": "2019-10-24T03:29:54Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2NzA4NzIy",
+          "commit": {
+            "abbreviatedOid": "937f780"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-24T16:29:47Z",
+          "updatedAt": "2019-10-24T16:29:47Z",
+          "comments": [
+            {
+              "originalPosition": 217,
+              "body": "Yep! Will fix.",
+              "createdAt": "2019-10-24T16:29:47Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2NzE2Mjcx",
+          "commit": {
+            "abbreviatedOid": "af82fdf"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-24T16:42:29Z",
+          "updatedAt": "2019-10-24T16:42:30Z",
+          "comments": [
+            {
+              "originalPosition": 188,
+              "body": "I removed this altogether! Please let me know what you think.",
+              "createdAt": "2019-10-24T16:42:29Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2NzE2NDI2",
+          "commit": {
+            "abbreviatedOid": "af82fdf"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-24T16:42:45Z",
+          "updatedAt": "2019-10-24T16:42:46Z",
+          "comments": [
+            {
+              "originalPosition": 131,
+              "body": "Agreed, though this is now moot since I removed more text.",
+              "createdAt": "2019-10-24T16:42:46Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2NzgzNjg2",
+          "commit": {
+            "abbreviatedOid": "9463bae"
+          },
+          "author": "bemasc",
+          "authorAssociation": "NONE",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2019-10-24T18:37:41Z",
+          "updatedAt": "2019-10-24T18:37:56Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "I think this should probably be a complete sentence.",
+              "createdAt": "2019-10-24T18:37:41Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzA2Nzg1MjMx",
+          "commit": {
+            "abbreviatedOid": "9463bae"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2019-10-24T18:40:14Z",
+          "updatedAt": "2019-10-24T18:40:14Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "Heh, oops. :)",
+              "createdAt": "2019-10-24T18:40:14Z",
+              "updatedAt": "2019-10-24T18:42:10Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzMzMzQ2MzU1",
+      "title": "Use external PSK Importers.",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/9",
+      "state": "OPEN",
+      "author": "jhoyla",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "Use external PSK importers to allow use of ESNI with Resumption. \r\nWe change the binder labels to \"imp ext binder\" and \"imp res binder\" to maintain the separation between OOB PSKs and Resumption PSKs. ",
+      "createdAt": "2019-10-28T22:10:38Z",
+      "updatedAt": "2019-10-28T22:10:38Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "caw/key-schedule-injection",
+      "baseRefOid": "a22ffbe5e5aa1f00f9f6d6b541f00379bde8e937",
+      "headRepository": "jhoyla/draft-ietf-tls-esni",
+      "headRefName": "jhoyla/key-schedule-injection",
+      "headRefOid": "6291d86d7b2ae5c612f318aee1dea9c49ab473fb",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 10,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzc4ODAzNDM3",
+      "title": "ESNI -> ECHO, with HPKE",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/10",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-02-24T04:20:18Z",
+      "updatedAt": "2020-03-19T00:43:24Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "f13e0c956c1b42e4121ee41904a77af1bacebf18",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "tunnel_version",
+      "headRefOid": "7ddeff562f2037be71b8426d5970dea978aca501",
+      "closedAt": "2020-03-19T00:43:24Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 11,
+      "id": "PR_kwDOCgFgAc5WRUSN",
+      "title": "Add text describing deployment impacts of no SNI access",
+      "url": "https://github.com/chris-wood/draft-ietf-tls-esni/pull/11",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "This is based on discussion with the authors of draft-campling-ech-deployment-considerations.",
+      "createdAt": "2023-07-24T21:10:52Z",
+      "updatedAt": "2023-07-24T21:11:01Z",
+      "baseRepository": "chris-wood/draft-ietf-tls-esni",
+      "baseRefName": "master",
+      "baseRefOid": "173a0c6c3ab8e3cd54e84ea6c0a43ae4e74bf223",
+      "headRepository": "chris-wood/draft-ietf-tls-esni",
+      "headRefName": "caw/no-sni-impact",
+      "headRefOid": "f3193d81cfce68f745461337da8b6beb422d0933",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "OWNER",
+          "body": "cc @ekr",
+          "createdAt": "2023-07-24T21:11:00Z",
+          "updatedAt": "2023-07-24T21:11:00Z"
+        }
+      ],
+      "reviews": []
+    }
+  ]
+}
